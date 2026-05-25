@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+. "$(dirname "$0")/pipeline_config.sh"
 REPORT_DIR="$HOME/czkawka_reports"
-TRASH_DIR="/mnt/storage_2tb/media_trash"
+TRASH_DIR="$HD_PATH/media_trash"
 DRY_RUN=true
 
 [[ "${1:-}" == "--confirm" ]] && DRY_RUN=false

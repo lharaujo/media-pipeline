@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-MEDIA_DIR="/mnt/storage_2tb/cleaning_staging"
+. "$(dirname "$0")/pipeline_config.sh"
+MEDIA_DIR="$HD_PATH/cleaning_staging"
 REPORT_DIR="$HOME/czkawka_reports"
 SIMILARITY="High"
 BLUR_THRESHOLD=1000

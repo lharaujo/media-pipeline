@@ -1,7 +1,7 @@
-[200~#!/usr/bin/env bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-HD_PATH="/mnt/storage_2tb"
+. "$(dirname "$0")/pipeline_config.sh"
 IMMICH_DIR="$HD_PATH/immich_app"
 
 echo "==> 1. Installing System Dependencies..."
@@ -26,7 +26,7 @@ CZKAWKA_VERSION=$(curl -s https://api.github.com/repos/qarmin/czkawka/releases/l
 curl -L "https://github.com/qarmin/czkawka/releases/download/${CZKAWKA_VERSION}/linux_czkawka_cli" -o /tmp/czkawka_cli
 sudo install -m 755 /tmp/czkawka_cli /usr/local/bin/czkawka_cli
 
-echo "==> 5. Building 2TB HD Directory Structure..."
+echo "==> 5. Building media directory structure at $HD_PATH..."
 mkdir -p "$HD_PATH"/{raw_gdrive,raw_takeout_zips,takeout_extracted,cleaning_staging,media_trash,immich_library}
 mkdir -p "$IMMICH_DIR"
 

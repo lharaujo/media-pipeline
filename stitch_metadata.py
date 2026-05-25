@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 import json
-import subprocess
 import os
-from pathlib import Path
+import subprocess
 from datetime import datetime, timezone
+from pipeline_config import HD_PATH
 from timezonefinder import TimezoneFinder
 import pytz
 
-TAKEOUT_ZIPS = Path("/mnt/storage_2tb/raw_takeout_zips")
-EXTRACT_DIR = Path("/mnt/storage_2tb/takeout_extracted")
-STAGING_DIR = Path("/mnt/storage_2tb/cleaning_staging")
+TAKEOUT_ZIPS = HD_PATH / "raw_takeout_zips"
+EXTRACT_DIR = HD_PATH / "takeout_extracted"
+STAGING_DIR = HD_PATH / "cleaning_staging"
+RAW_GDRIVE_DIR = HD_PATH / "raw_gdrive"
 
 print("==> Unzipping Takeout Archives...")
 for zip_file in TAKEOUT_ZIPS.glob("*.zip"):
@@ -60,5 +61,5 @@ for json_file in EXTRACT_DIR.rglob("*.json"):
     os.rename(str(media_file), str(STAGING_DIR / media_file.relative_to(EXTRACT_DIR)))
 
 print("==> Merging filtered Google Drive downloads into staging...")
-subprocess.run(["rsync", "-a", "/mnt/storage_2tb/raw_gdrive/", "/mnt/storage_2tb/cleaning_staging/"])
+subprocess.run(["rsync", "-a", f"{RAW_GDRIVE_DIR}/", f"{STAGING_DIR}/"])
 print("Metadata integration complete.")
