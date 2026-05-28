@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Immich documentation
+    url: https://docs.immich.app/
+    about: For Immich-specific behavior and external-library features.
+  - name: CodeRabbit documentation
+    url: https://docs.coderabbit.ai/
+    about: For CodeRabbit setup and pull-request review configuration.

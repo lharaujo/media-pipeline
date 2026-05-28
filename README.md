@@ -220,3 +220,25 @@ Ubuntu or Debian-like Linux is recommended. The dependency script installs:
 - Some corrupted videos may not accept metadata writes; these are logged and still moved into staging.
 - Similar-image and similar-video detection can have false positives. Review dry-runs.
 - Read-only Immich external libraries cannot be modified by Immich. If you trash items in Immich, the original files may reappear after rescan because the read-only mount prevents Immich from deleting originals.
+
+
+## CodeRabbit and CI/CD
+
+This repository includes CodeRabbit configuration and GitHub Actions workflows for public/open-source maintenance. CodeRabbit is configured through `.coderabbit.yaml` in the repository root and reviews pull requests with extra attention to destructive operations, Czkawka report parsing, Immich storage separation, Bash safety, and recovery documentation.
+
+The CI workflow validates shell scripts, Python syntax/linting, YAML, Docker Compose rendering, and GitHub Actions workflow syntax. See `docs/CODERABBIT_AND_CI.md` for setup instructions.
+
+Before making the repository public, run the checklist in `docs/PUBLIC_RELEASE_CHECKLIST.md`.
+## Contributing
+
+Contributions are welcome. This project is intentionally conservative because it handles personal photos and videos. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a pull request.
+
+Good first contributions include documentation fixes, distro-specific dependency notes, safer error messages, additional troubleshooting cases, and test reports from small disposable media samples.
+
+Safety-sensitive contributions, especially changes to duplicate parsing, deletion, metadata writing, Docker mounts, or permissions, must explain the failure mode considered and the recovery path for users. Destructive actions must continue to default to dry-run and must never permanently delete media automatically.
+
+## License
+
+This project is licensed under the MIT License. See [`LICENSE`](LICENSE).
+
+The MIT License allows reuse, modification, distribution, and private or commercial use, provided the copyright and license notice are included. The software is provided without warranty.

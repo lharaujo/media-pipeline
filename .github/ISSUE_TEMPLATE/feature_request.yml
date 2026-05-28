@@ -1,0 +1,16 @@
+name: Feature request
+description: Suggest an improvement
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: feature
+    attributes:
+      label: What should be improved?
+    validations:
+      required: true
+  - type: textarea
+    id: safety
+    attributes:
+      label: Safety considerations
+      description: Could this affect deletion, metadata, or original media files?

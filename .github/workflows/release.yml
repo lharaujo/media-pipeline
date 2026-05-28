@@ -1,0 +1,43 @@
+name: Release package
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  package:
+    name: Build release archive
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create source archive
+        run: |
+          VERSION="${GITHUB_REF_NAME:-manual}"
+          git archive --format=zip --prefix="media-pipeline-${VERSION}/"             -o "media-pipeline-${VERSION}.zip" HEAD
+          sha256sum "media-pipeline-${VERSION}.zip" > "media-pipeline-${VERSION}.zip.sha256"
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: media-pipeline-release-package
+          path: |
+            media-pipeline-*.zip
+            media-pipeline-*.zip.sha256
+
+      - name: Publish GitHub release for tags
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            media-pipeline-*.zip
+            media-pipeline-*.zip.sha256
+          generate_release_notes: true

@@ -1,0 +1,42 @@
+# Local configuration and secrets
+.env
+*.env
+!.env.example
+!immich/env.template
+rclone.conf
+*.token
+*.secret
+
+# Runtime media and generated data
+raw_takeout_zips/
+raw_gdrive/
+takeout_extracted/
+cleaning_staging/
+immich_library/
+immich_app/
+media_trash/
+czkawka_reports/
+*.log
+*.tmp
+*.bak
+
+# Archives and large exports
+*.zip
+*.tgz
+*.tar
+*.tar.gz
+*.7z
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

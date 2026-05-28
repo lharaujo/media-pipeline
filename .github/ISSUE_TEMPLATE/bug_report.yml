@@ -1,0 +1,46 @@
+name: Bug report
+description: Report a reproducible problem with the media pipeline
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the problem and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands run
+      description: Paste the exact commands you ran.
+      render: bash
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: Redact private paths, names, emails, tokens, and file names if needed.
+      render: text
+  - type: dropdown
+    id: stage
+    attributes:
+      label: Pipeline stage
+      options:
+        - setup
+        - Google Takeout import
+        - Google Drive import
+        - metadata stitching
+        - duplicate scan
+        - duplicate deletion dry-run
+        - Immich setup
+        - Immich external library scan
+        - other
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Docker version, available disk space, and external drive filesystem.
+      render: text
