@@ -24,9 +24,9 @@ Branch: `feature-cross-platform-desktop-app`
 | 4. Build core UI | Complete | `9b3a932` | `flutter analyze`; `flutter test` | Operational workflow, path settings, logs, guarded actions. |
 | 5. Add platform and dependency checks | Complete | `9b3a932` | `flutter analyze`; `flutter test` | Linux/ChromeOS full support; macOS/Windows guarded support. |
 | 6. Integrate safety-critical workflows | Complete | `9b3a932` | `flutter analyze`; `flutter test` | Dry-run review before confirm cleanup or restore. |
-| 7. Add tests and CI | In progress | Pending | `flutter analyze`; `flutter test`; CI workflow updated. | Flutter model/widget tests added; CI pending commit. |
-| 8. Update user documentation | In progress | Pending | Documentation updated. | README, instructions, and app usage docs. |
-| 9. Final verification and push | Pending | Pending | Pending | Push structured commits to origin. |
+| 7. Add tests and CI | Complete | `1854d6f` | `flutter analyze`; `flutter test`; CI workflow updated. | Flutter model/widget tests added. |
+| 8. Update user documentation | Complete | `1854d6f` | Documentation updated. | README, instructions, and app usage docs. |
+| 9. Final verification and push | In progress | Pending | `flutter analyze`; `flutter test`; `python3 -m compileall scripts config`. | Push structured commits to origin. |
 
 ## Public Interfaces
 
@@ -46,4 +46,5 @@ Branch: `feature-cross-platform-desktop-app`
 - 2026-05-28: Completed planning artifact setup; commit `75073c7`.
 - 2026-05-28: Completed Flutter desktop scaffold; commit `b439119`.
 - 2026-05-28: Added typed pipeline model, process runner, guarded desktop UI, and Flutter tests; commit `9b3a932`. Verification: `flutter analyze` passed; `flutter test` passed.
-- 2026-05-28: Added Flutter CI job and desktop app documentation.
+- 2026-05-28: Added Flutter CI job and desktop app documentation; commit `1854d6f`.
+- 2026-05-28: Final local verification: `flutter analyze` passed; `flutter test` passed; `python3 -m compileall scripts config` passed. Linux desktop build could not complete locally because `cmake` is not installed. `shellcheck`, `shfmt`, `ruff`, and `yamllint` are also not installed locally and remain covered by CI.
