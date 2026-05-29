@@ -70,11 +70,18 @@ Windows, and ChromeOS through the ChromeOS Linux environment. The app wraps the
 existing scripts and keeps the same safety model: dry-runs first, explicit
 confirm actions, and no permanent deletion.
 
-Immich in the app currently covers the help library, read-only server checks,
-and a locally saved phone backup checklist. See
-[`docs/DESKTOP_APP.md`](docs/DESKTOP_APP.md) and
-[`docs/IMMICH_HELP_LIBRARY.md`](docs/IMMICH_HELP_LIBRARY.md) for the practical
-setup notes.
+Current app status:
+
+- wraps the existing guarded script workflow;
+- shows Immich help and private-server setup guidance;
+- checks Immich with read-only API requests and a statistics panel;
+- tracks phone backup setup in a local non-secret checklist.
+
+Useful docs:
+
+- [`docs/DESKTOP_APP.md`](docs/DESKTOP_APP.md)
+- [`docs/IMMICH_HELP_LIBRARY.md`](docs/IMMICH_HELP_LIBRARY.md)
+- [`docs/MEMORIES_AND_MOBILE_PLAN.md`](docs/MEMORIES_AND_MOBILE_PLAN.md)
 
 Run the app during development:
 
@@ -252,6 +259,7 @@ This repository includes CodeRabbit configuration and GitHub Actions workflows f
 The CI workflow validates shell scripts, Python syntax/linting, YAML, Docker Compose rendering, and GitHub Actions workflow syntax. See `docs/CODERABBIT_AND_CI.md` for setup instructions.
 
 Before making the repository public, run the checklist in `docs/PUBLIC_RELEASE_CHECKLIST.md`.
+
 ## Contributing
 
 Contributions are welcome. This project is intentionally conservative because it handles personal photos and videos. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a pull request.
