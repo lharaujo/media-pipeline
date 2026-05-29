@@ -130,6 +130,45 @@ void main() {
       },
     );
 
+    test('accepts alternate statistics keys and ignores null or invalid values', () async {
+      final client = ImmichApiClient(
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/api/server/ping' => const ImmichHttpResponse(
+              statusCode: 200,
+              body: '{"res":"pong"}',
+            ),
+            '/api/server/about' => ImmichHttpResponse(
+              statusCode: 200,
+              body: jsonEncode({'version': '1.140.0'}),
+            ),
+            '/api/server/statistics' => ImmichHttpResponse(
+              statusCode: 200,
+              body: jsonEncode({
+                'photos': null,
+                'photoCount': '1200',
+                'videoCount': 'not-a-number',
+                'usageBytes': null,
+                'storageUsageBytes': 987654321.0,
+              }),
+            ),
+            _ => const ImmichHttpResponse(statusCode: 404, body: '{}'),
+          };
+        },
+      );
+
+      final report = await client.check(
+        const ImmichConnectionSettings(
+          serverUrl: 'http://localhost:2283',
+          apiKey: 'secret',
+        ),
+      );
+
+      expect(report.photos, 1200);
+      expect(report.videos, isNull);
+      expect(report.usageBytes, 987654321);
+    });
+
     test('supports ping-only connection without an API key', () async {
       final calls = <Uri>[];
       final client = ImmichApiClient(
