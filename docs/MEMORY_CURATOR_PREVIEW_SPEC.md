@@ -9,6 +9,13 @@ This spec defines the first version of the Immich memory-curator work as a read-
 - Explain why each candidate was chosen.
 - Allow the user to review candidates before any future write path exists.
 
+## Current Implementation
+
+The first implementation step is a local rules engine in
+`lib/src/memory_curator.dart`. It accepts already-loaded asset metadata and
+returns preview candidates plus exclusion reasons. It does not call Immich, write
+memories, upload files, or persist scoring data.
+
 ## Candidate Sources
 
 - This day or week in prior years.
