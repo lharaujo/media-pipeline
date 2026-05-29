@@ -24,9 +24,9 @@ Branch: `feature-cross-platform-desktop-app`
 | 4. Build core UI | Complete | `9b3a932` | `flutter analyze`; `flutter test` | Operational workflow, path settings, logs, guarded actions. |
 | 5. Add platform and dependency checks | Complete | `9b3a932` | `flutter analyze`; `flutter test` | Linux/ChromeOS full support; macOS/Windows guarded support. |
 | 6. Integrate safety-critical workflows | Complete | `9b3a932` | `flutter analyze`; `flutter test` | Dry-run review before confirm cleanup or restore. |
-| 7. Add tests and CI | Complete | `1854d6f` | `flutter analyze`; `flutter test`; CI workflow updated. | Flutter model/widget tests added. |
+| 7. Add tests and CI | Complete | `4337b0a` | `flutter analyze`; `flutter test`; app-driven simulation; Bash/Python unit tests. | Flutter model/widget tests, pipeline unit tests, and app-driven script simulation added. |
 | 8. Update user documentation | Complete | `1854d6f` | Documentation updated. | README, instructions, and app usage docs. |
-| 9. Final verification and push | Complete | `4ab9af8` | `flutter analyze`; `flutter test`; `python3 -m compileall scripts config`. | Structured commits ready for origin push. |
+| 9. Final verification and push | Complete | `4337b0a` | `flutter analyze`; `flutter test`; `python3 -m unittest discover -s tests`; `ruff`; `yamllint`; `shfmt`; `compileall`. | Branch pushed and ready for PR review. |
 
 ## Public Interfaces
 
@@ -50,3 +50,6 @@ Branch: `feature-cross-platform-desktop-app`
 - 2026-05-28: Final local verification: `flutter analyze` passed; `flutter test` passed; `python3 -m compileall scripts config` passed. Linux desktop build could not complete locally because `cmake` is not installed. `shellcheck`, `shfmt`, `ruff`, and `yamllint` are also not installed locally and remain covered by CI.
 - 2026-05-28: Final plan status updated; commit `4ab9af8`.
 - 2026-05-28: Added Immich mobile backup and memories expansion plan, source-backed help library, and in-app Immich Help section.
+- 2026-05-29: Merged latest `main` test coverage into the desktop app branch; commit `db393cc`.
+- 2026-05-29: Added app-driven simulation that uses the Flutter `PipelineRunner` to execute real cleanup and restore scripts against a temporary media root; commit `4337b0a`.
+- 2026-05-29: Verification passed: `flutter test test/app_driven_simulation_test.dart`, `flutter test`, `flutter analyze`, `python3 -m unittest discover -s tests`, `ruff check scripts config tests`, `yamllint .`, `shfmt -d scripts/*.sh config/*.sh`, and `python3 -m compileall scripts config tests`.
