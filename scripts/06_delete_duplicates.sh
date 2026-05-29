@@ -83,7 +83,7 @@ score_keep_path() {
 
 process_czkawka_report() {
   local report="$1"
-  [[ -f "$report" ]] || return
+  [[ -f "$report" ]] || return 0
   echo "==> Processing duplicate report: $report"
 
   local -a group=()
@@ -119,10 +119,10 @@ process_czkawka_report() {
       flush_group
       continue
     fi
-    # Accept only Czkawka lines that START with a quoted absolute file path.
-    if [[ "$line" =~ ^\"(/mnt/target_drive/cleaning_staging/[^\"]+)\" ]]; then
+    # Accept only Czkawka lines that START with a quoted path inside staging.
+    if [[ "$line" =~ ^\"([^\"]+)\" ]]; then
       path="${BASH_REMATCH[1]}"
-      group+=("$path")
+      [[ "$path" == "$CLEANING_STAGING"/* ]] && group+=("$path")
     fi
   done < "$report"
   flush_group

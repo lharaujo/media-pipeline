@@ -17,7 +17,7 @@ DRY_RUN=1
 [[ "$CONFIRM" == "--confirm" ]] && DRY_RUN=0
 
 find "$MEDIA_TRASH" -type f -print0 | while IFS= read -r -d '' f; do
-  rel="${f#$MEDIA_TRASH/}"
+  rel="${f#"$MEDIA_TRASH"/}"
   dest="/$rel"
   if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "Would restore: $f -> $dest"
