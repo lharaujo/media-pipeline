@@ -34,7 +34,8 @@ flutter run -d windows
 3. Install or configure missing dependencies outside the app when needed.
 4. Run pipeline steps in order.
 5. Run duplicate cleanup dry-run and inspect the log output.
-6. Use confirm cleanup only after the dry-run step succeeds in the same app session.
+6. If needed, run confirm cleanup via CLI after reviewing the dry-run output
+   (confirm is not yet available in the app UI).
 
 ## Help Section
 
