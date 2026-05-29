@@ -126,6 +126,7 @@ void main() {
     expect(find.text('Backup enabled'), findsOneWidget);
     expect(find.text('First upload observed'), findsOneWidget);
     expect(find.text('Background permissions reviewed'), findsOneWidget);
+    expect(find.text('Notes'), findsOneWidget);
   });
 }
 
@@ -188,7 +189,11 @@ class _FakeChecklistStore extends ImmichChecklistStore {
 
   @override
   Future<List<ImmichPhoneBackupChecklist>> load() async {
-    return [ImmichPhoneBackupChecklist.empty(id: 'phone-1')];
+    return [
+      ImmichPhoneBackupChecklist.empty(id: 'phone-1').copyWith(
+        notes: 'Capture the first full backup on Wi-Fi.',
+      ),
+    ];
   }
 
   @override

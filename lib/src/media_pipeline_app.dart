@@ -734,6 +734,7 @@ class _PhoneBackupChecklistCard extends StatefulWidget {
 
 class _PhoneBackupChecklistCardState extends State<_PhoneBackupChecklistCard> {
   late final TextEditingController _phoneNameController;
+  late final TextEditingController _notesController;
 
   @override
   void initState() {
@@ -741,6 +742,7 @@ class _PhoneBackupChecklistCardState extends State<_PhoneBackupChecklistCard> {
     _phoneNameController = TextEditingController(
       text: widget.checklist.phoneName,
     );
+    _notesController = TextEditingController(text: widget.checklist.notes);
   }
 
   @override
@@ -750,11 +752,16 @@ class _PhoneBackupChecklistCardState extends State<_PhoneBackupChecklistCard> {
         _phoneNameController.text != widget.checklist.phoneName) {
       _phoneNameController.text = widget.checklist.phoneName;
     }
+    if (oldWidget.checklist.notes != widget.checklist.notes &&
+        _notesController.text != widget.checklist.notes) {
+      _notesController.text = widget.checklist.notes;
+    }
   }
 
   @override
   void dispose() {
     _phoneNameController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -766,10 +773,12 @@ class _PhoneBackupChecklistCardState extends State<_PhoneBackupChecklistCard> {
     bool? backupEnabled,
     bool? firstUploadObserved,
     bool? backgroundPermissionsReviewed,
+    String? notes,
   }) {
     widget.onChanged(
       widget.checklist.copyWith(
         phoneName: phoneName ?? widget.checklist.phoneName,
+        notes: notes ?? widget.checklist.notes,
         appInstalled: appInstalled ?? widget.checklist.appInstalled,
         serverLoginConfirmed:
             serverLoginConfirmed ?? widget.checklist.serverLoginConfirmed,
@@ -859,6 +868,18 @@ class _PhoneBackupChecklistCardState extends State<_PhoneBackupChecklistCard> {
                   _update(backgroundPermissionsReviewed: value ?? false),
               title: const Text('Background permissions reviewed'),
               contentPadding: EdgeInsets.zero,
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: _notesController,
+              minLines: 2,
+              maxLines: 4,
+              decoration: const InputDecoration(
+                labelText: 'Notes',
+                hintText: 'Optional reminders, issues, or follow-up steps',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) => _update(notes: value),
             ),
           ],
         ),
