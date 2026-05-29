@@ -29,7 +29,7 @@ Avoid exposing Immich directly to the public internet unless you understand TLS,
 
 Immich can automatically upload selected albums when the app opens/resumes and periodically in the background. Background behavior still depends on iOS/Android rules.
 
-The desktop app also keeps a local phone checklist so you can track which devices are ready without storing secrets. The checklist is saved as JSON in the app's local data folder, and optional per-phone notes stay local too.
+The desktop app also keeps a local phone checklist so you can track which devices are ready without storing secrets. The checklist is saved as JSON in the app's local data folder, and optional per-phone notes stay local too. Keep notes non-secret: do not put API keys, server URLs, passwords, or personal access details there.
 
 ## How To Create An Immich API Key
 
