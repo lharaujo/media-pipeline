@@ -53,6 +53,9 @@ jobs:
       - name: Run Ruff
         run: ruff check scripts config
 
+      - name: Run Bash and Python unit tests
+        run: python -m unittest discover -s tests
+
   flutter:
     name: Flutter desktop app
     runs-on: ubuntu-latest
