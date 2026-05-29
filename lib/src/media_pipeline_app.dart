@@ -653,9 +653,17 @@ class _PhoneBackupChecklistSection extends StatelessWidget {
     final completedChecklists = checklists.isEmpty
         ? 0
         : checklists
-            .map(checklistProgressCompleteCount)
-            .fold<int>(0, (total, count) => total + count);
-    final totalChecklistsProgress = checklists.length * checklistProgressTotalCount;
+              .map(checklistProgressCompleteCount)
+              .fold<int>(0, (total, count) => total + count);
+    final completedPhones = checklists
+        .where(
+          (checklist) =>
+              checklistProgressCompleteCount(checklist) ==
+              checklistProgressTotalCount,
+        )
+        .length;
+    final totalChecklistsProgress =
+        checklists.length * checklistProgressTotalCount;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -680,6 +688,10 @@ class _PhoneBackupChecklistSection extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Overall progress: $completedChecklists/$totalChecklistsProgress complete across ${checklists.length} phone${checklists.length == 1 ? '' : 's'}',
+            style: textTheme.bodySmall,
+          ),
+          Text(
+            'Completed phones: $completedPhones/${checklists.length}',
             style: textTheme.bodySmall,
           ),
         ],

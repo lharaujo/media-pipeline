@@ -124,6 +124,7 @@ void main() {
       find.text('Overall progress: 0/6 complete across 1 phone'),
       findsOneWidget,
     );
+    expect(find.text('Completed phones: 0/1'), findsOneWidget);
     expect(find.text('Progress: 0/6 complete'), findsOneWidget);
     expect(find.text('App installed'), findsOneWidget);
     expect(find.text('Server login confirmed'), findsOneWidget);
@@ -195,9 +196,9 @@ class _FakeChecklistStore extends ImmichChecklistStore {
   @override
   Future<List<ImmichPhoneBackupChecklist>> load() async {
     return [
-      ImmichPhoneBackupChecklist.empty(id: 'phone-1').copyWith(
-        notes: 'Capture the first full backup on Wi-Fi.',
-      ),
+      ImmichPhoneBackupChecklist.empty(
+        id: 'phone-1',
+      ).copyWith(notes: 'Capture the first full backup on Wi-Fi.'),
     ];
   }
 
