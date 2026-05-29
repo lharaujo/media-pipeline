@@ -84,6 +84,9 @@ Useful docs:
 
 - [`docs/DESKTOP_APP.md`](docs/DESKTOP_APP.md)
 - [`docs/IMMICH_HELP_LIBRARY.md`](docs/IMMICH_HELP_LIBRARY.md)
+- [`docs/IMMICH_SETTINGS_STORAGE.md`](docs/IMMICH_SETTINGS_STORAGE.md)
+- [`docs/MEMORY_CURATOR_PREVIEW_SPEC.md`](docs/MEMORY_CURATOR_PREVIEW_SPEC.md)
+- [`docs/PRIVATE_BETA_CHECKLIST.md`](docs/PRIVATE_BETA_CHECKLIST.md)
 - [`docs/MEMORIES_AND_MOBILE_PLAN.md`](docs/MEMORIES_AND_MOBILE_PLAN.md)
 
 Run the app during development:
