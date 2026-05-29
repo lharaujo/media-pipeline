@@ -7,7 +7,9 @@ import 'pipeline_models.dart';
 import 'pipeline_runner.dart';
 
 class MediaPipelineApp extends StatelessWidget {
-  const MediaPipelineApp({super.key});
+  const MediaPipelineApp({super.key, this.immichClient});
+
+  final ImmichApiClient? immichClient;
 
   @override
   Widget build(BuildContext context) {
@@ -22,13 +24,15 @@ class MediaPipelineApp extends StatelessWidget {
         useMaterial3: true,
         visualDensity: VisualDensity.compact,
       ),
-      home: const PipelineHomePage(),
+      home: PipelineHomePage(immichClient: immichClient),
     );
   }
 }
 
 class PipelineHomePage extends StatefulWidget {
-  const PipelineHomePage({super.key});
+  const PipelineHomePage({super.key, this.immichClient});
+
+  final ImmichApiClient? immichClient;
 
   @override
   State<PipelineHomePage> createState() => _PipelineHomePageState();
@@ -37,8 +41,8 @@ class PipelineHomePage extends StatefulWidget {
 class _PipelineHomePageState extends State<PipelineHomePage> {
   final List<PipelineStep> _steps = buildPipelineSteps();
   final Map<String, StepRunState> _states = {};
-  final ImmichApiClient _immichClient = ImmichApiClient();
   late final PipelineRunner _runner;
+  late final ImmichApiClient _immichClient;
   late final TextEditingController _hdPathController;
   late final TextEditingController _immichApiKeyController;
   late final TextEditingController _immichUrlController;
@@ -58,6 +62,7 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
     super.initState();
     _settings = PipelineSettings.defaults();
     _runner = PipelineRunner(workingDirectory: Directory.current.path);
+    _immichClient = widget.immichClient ?? ImmichApiClient();
     _hdPathController = TextEditingController(text: _settings.hdPath);
     _immichUrlController = TextEditingController(text: 'http://localhost:2283');
     _immichApiKeyController = TextEditingController();
@@ -368,6 +373,8 @@ class _ImmichConnectionDetail extends StatelessWidget {
             controller: apiKeyController,
             enabled: !checking,
             obscureText: true,
+            autocorrect: false,
+            enableSuggestions: false,
             decoration: const InputDecoration(
               labelText: 'API key',
               helperText:
@@ -458,11 +465,13 @@ class _StatusPanel extends StatelessWidget {
               children: [
                 Icon(icon, size: 20, color: foreground),
                 const SizedBox(width: 8),
-                Text(
-                  title,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(color: foreground),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.titleMedium?.copyWith(color: foreground),
+                  ),
                 ),
               ],
             ),

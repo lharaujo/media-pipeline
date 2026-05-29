@@ -59,6 +59,16 @@ The **Immich** section checks a private Immich server before future mobile backu
 
 The app runs `GET /api/server/ping` without credentials. If an API key is present, it also runs read-only authenticated server checks using the `x-api-key` header. The key is held only in memory for the running app session and is not written to project files.
 
+Test the connection manually:
+
+```bash
+curl -i http://localhost:2283/api/server/ping
+curl -i -H "x-api-key: YOUR_API_KEY" http://localhost:2283/api/server/about
+curl -i -H "x-api-key: YOUR_API_KEY" http://localhost:2283/api/server/statistics
+```
+
+Replace `http://localhost:2283` with your own private Immich URL and `YOUR_API_KEY` with a key from your Immich web app. These commands reproduce the app checks outside the UI, which is useful for troubleshooting connectivity and permissions.
+
 ## Safety Notes
 
 - The app never adds `--confirm` to dry-run commands.

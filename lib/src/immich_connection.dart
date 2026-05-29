@@ -118,12 +118,16 @@ class ImmichApiClient {
 
     final aboutJson = _decodeObject(about.body);
     Map<String, Object?> statisticsJson = const {};
-    final statistics = await _get(
-      apiBase.resolve('server/statistics'),
-      headers,
-    );
-    if (statistics.statusCode >= 200 && statistics.statusCode < 300) {
-      statisticsJson = _decodeObject(statistics.body);
+    try {
+      final statistics = await _get(
+        apiBase.resolve('server/statistics'),
+        headers,
+      );
+      if (statistics.statusCode >= 200 && statistics.statusCode < 300) {
+        statisticsJson = _decodeObject(statistics.body);
+      }
+    } catch (_) {
+      statisticsJson = const {};
     }
 
     return ImmichConnectionReport(
