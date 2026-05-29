@@ -19,4 +19,16 @@ void main() {
     expect(find.text('Phone Backup'), findsOneWidget);
     expect(find.text('Private Docker Server'), findsOneWidget);
   });
+
+  testWidgets('shows Immich connection section', (WidgetTester tester) async {
+    await tester.pumpWidget(const MediaPipelineApp());
+
+    await tester.tap(find.text('Immich'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Immich Connection'), findsOneWidget);
+    expect(find.text('Immich server URL'), findsOneWidget);
+    expect(find.text('API key'), findsOneWidget);
+    expect(find.text('Check Connection'), findsOneWidget);
+  });
 }

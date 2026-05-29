@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
+import 'immich_connection.dart';
 import 'pipeline_models.dart';
 import 'pipeline_runner.dart';
 
@@ -36,13 +37,19 @@ class PipelineHomePage extends StatefulWidget {
 class _PipelineHomePageState extends State<PipelineHomePage> {
   final List<PipelineStep> _steps = buildPipelineSteps();
   final Map<String, StepRunState> _states = {};
+  final ImmichApiClient _immichClient = ImmichApiClient();
   late final PipelineRunner _runner;
   late final TextEditingController _hdPathController;
+  late final TextEditingController _immichApiKeyController;
+  late final TextEditingController _immichUrlController;
   late final TextEditingController _reportDirController;
   late PipelineSettings _settings;
   int _selectedIndex = 0;
-  bool _showHelp = false;
+  _AppMode _mode = _AppMode.workflow;
   String? _runningStepId;
+  bool _checkingImmich = false;
+  ImmichConnectionReport? _immichReport;
+  String? _immichError;
 
   PipelineStep get _selectedStep => _steps[_selectedIndex];
 
@@ -52,6 +59,8 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
     _settings = PipelineSettings.defaults();
     _runner = PipelineRunner(workingDirectory: Directory.current.path);
     _hdPathController = TextEditingController(text: _settings.hdPath);
+    _immichUrlController = TextEditingController(text: 'http://localhost:2283');
+    _immichApiKeyController = TextEditingController();
     _reportDirController = TextEditingController(text: _settings.reportDir);
     for (final step in _steps) {
       _states[step.id] = const StepRunState();
@@ -61,6 +70,8 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
   @override
   void dispose() {
     _hdPathController.dispose();
+    _immichApiKeyController.dispose();
+    _immichUrlController.dispose();
     _reportDirController.dispose();
     super.dispose();
   }
@@ -110,6 +121,50 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
     });
   }
 
+  Future<void> _checkImmichConnection() async {
+    if (_checkingImmich) {
+      return;
+    }
+
+    setState(() {
+      _checkingImmich = true;
+      _immichError = null;
+      _immichReport = null;
+    });
+
+    try {
+      final report = await _immichClient.check(
+        ImmichConnectionSettings(
+          serverUrl: _immichUrlController.text,
+          apiKey: _immichApiKeyController.text,
+        ),
+      );
+      if (!mounted) {
+        return;
+      }
+      setState(() => _immichReport = report);
+    } on FormatException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _immichError = error.message);
+    } on ImmichConnectionException catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _immichError = error.message);
+    } catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _immichError = 'Immich check failed: $error');
+    } finally {
+      if (mounted) {
+        setState(() => _checkingImmich = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -127,23 +182,28 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
                     const _AppHeader(),
                     Padding(
                       padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                      child: SegmentedButton<bool>(
+                      child: SegmentedButton<_AppMode>(
                         segments: const [
                           ButtonSegment(
-                            value: false,
+                            value: _AppMode.workflow,
                             icon: Icon(Icons.playlist_play),
                             label: Text('Workflow'),
                           ),
                           ButtonSegment(
-                            value: true,
+                            value: _AppMode.immich,
+                            icon: Icon(Icons.dns),
+                            label: Text('Immich'),
+                          ),
+                          ButtonSegment(
+                            value: _AppMode.help,
                             icon: Icon(Icons.help_outline),
                             label: Text('Help'),
                           ),
                         ],
-                        selected: {_showHelp},
+                        selected: {_mode},
                         onSelectionChanged: _runningStepId == null
                             ? (selection) {
-                                setState(() => _showHelp = selection.first);
+                                setState(() => _mode = selection.first);
                               }
                             : null,
                       ),
@@ -151,44 +211,267 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
                     _SettingsPanel(
                       hdPathController: _hdPathController,
                       reportDirController: _reportDirController,
-                      enabled: _runningStepId == null && !_showHelp,
+                      enabled:
+                          _runningStepId == null && _mode == _AppMode.workflow,
                     ),
                     Expanded(
-                      child: _showHelp
-                          ? const _HelpNav()
-                          : ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-                              itemCount: _steps.length,
-                              itemBuilder: (context, index) {
-                                final step = _steps[index];
-                                return _StepTile(
-                                  step: step,
-                                  state:
-                                      _states[step.id] ?? const StepRunState(),
-                                  selected: index == _selectedIndex,
-                                  onTap: () =>
-                                      setState(() => _selectedIndex = index),
-                                );
-                              },
-                            ),
+                      child: switch (_mode) {
+                        _AppMode.workflow => ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                          itemCount: _steps.length,
+                          itemBuilder: (context, index) {
+                            final step = _steps[index];
+                            return _StepTile(
+                              step: step,
+                              state: _states[step.id] ?? const StepRunState(),
+                              selected: index == _selectedIndex,
+                              onTap: () =>
+                                  setState(() => _selectedIndex = index),
+                            );
+                          },
+                        ),
+                        _AppMode.immich => const _ImmichNav(),
+                        _AppMode.help => const _HelpNav(),
+                      },
                     ),
                   ],
                 ),
               ),
             ),
             Expanded(
-              child: _showHelp
-                  ? const _HelpDetail()
-                  : _StepDetail(
-                      step: _selectedStep,
-                      state: _states[_selectedStep.id] ?? const StepRunState(),
-                      canRun:
-                          _runningStepId == null &&
-                          canRunStep(step: _selectedStep, states: _states),
-                      running: _runningStepId == _selectedStep.id,
-                      onRun: _runSelectedStep,
-                    ),
+              child: switch (_mode) {
+                _AppMode.workflow => _StepDetail(
+                  step: _selectedStep,
+                  state: _states[_selectedStep.id] ?? const StepRunState(),
+                  canRun:
+                      _runningStepId == null &&
+                      canRunStep(step: _selectedStep, states: _states),
+                  running: _runningStepId == _selectedStep.id,
+                  onRun: _runSelectedStep,
+                ),
+                _AppMode.immich => _ImmichConnectionDetail(
+                  serverUrlController: _immichUrlController,
+                  apiKeyController: _immichApiKeyController,
+                  checking: _checkingImmich,
+                  report: _immichReport,
+                  error: _immichError,
+                  onCheck: _checkImmichConnection,
+                ),
+                _AppMode.help => const _HelpDetail(),
+              },
             ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+enum _AppMode { workflow, immich, help }
+
+class _ImmichNav extends StatelessWidget {
+  const _ImmichNav();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+      children: const [
+        _NavHintTile(
+          icon: Icons.dns,
+          title: 'Connection check',
+          subtitle: 'Ping the server and verify an API key.',
+        ),
+        _NavHintTile(
+          icon: Icons.key,
+          title: 'Credentials',
+          subtitle: 'Kept in memory only for this app session.',
+        ),
+        _NavHintTile(
+          icon: Icons.query_stats,
+          title: 'Read-only status',
+          subtitle: 'Server info and statistics only.',
+        ),
+      ],
+    );
+  }
+}
+
+class _NavHintTile extends StatelessWidget {
+  const _NavHintTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: ListTile(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        leading: Icon(icon, size: 20),
+        title: Text(title),
+        subtitle: Text(subtitle),
+      ),
+    );
+  }
+}
+
+class _ImmichConnectionDetail extends StatelessWidget {
+  const _ImmichConnectionDetail({
+    required this.serverUrlController,
+    required this.apiKeyController,
+    required this.checking,
+    required this.report,
+    required this.error,
+    required this.onCheck,
+  });
+
+  final TextEditingController serverUrlController;
+  final TextEditingController apiKeyController;
+  final bool checking;
+  final ImmichConnectionReport? report;
+  final String? error;
+  final VoidCallback onCheck;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: ListView(
+        children: [
+          Text('Immich Connection', style: textTheme.headlineSmall),
+          const SizedBox(height: 8),
+          const Text(
+            'Check a private Immich server before future mobile backup and memory-curator work. The API key is kept in memory only and is not written to project files.',
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: serverUrlController,
+            enabled: !checking,
+            decoration: const InputDecoration(
+              labelText: 'Immich server URL',
+              helperText:
+                  'Examples: http://localhost:2283 or http://SERVER_IP:2283',
+              prefixIcon: Icon(Icons.dns),
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: apiKeyController,
+            enabled: !checking,
+            obscureText: true,
+            decoration: const InputDecoration(
+              labelText: 'API key',
+              helperText:
+                  'Needs server.about for server info; statistics may need server.statistics.',
+              prefixIcon: Icon(Icons.key),
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: FilledButton.icon(
+              onPressed: checking ? null : onCheck,
+              icon: Icon(checking ? Icons.hourglass_top : Icons.fact_check),
+              label: Text(checking ? 'Checking' : 'Check Connection'),
+            ),
+          ),
+          const SizedBox(height: 20),
+          if (error != null)
+            _StatusPanel(
+              icon: Icons.error,
+              title: 'Connection failed',
+              lines: [error!],
+              isError: true,
+            )
+          else if (report != null)
+            _StatusPanel(
+              icon: report!.authenticated ? Icons.check_circle : Icons.info,
+              title: report!.statusLabel,
+              lines: [
+                'API base: ${report!.serverUrl}',
+                if (report!.version != null) 'Version: ${report!.version}',
+                if (report!.licensed != null)
+                  'Licensed: ${report!.licensed! ? 'yes' : 'no'}',
+                if (report!.photos != null) 'Photos: ${report!.photos}',
+                if (report!.videos != null) 'Videos: ${report!.videos}',
+                if (report!.usageBytes != null)
+                  'Storage usage: ${_formatBytes(report!.usageBytes!)}',
+                if (report!.message != null) report!.message!,
+              ],
+              isError: !report!.pingOk,
+            )
+          else
+            const _StatusPanel(
+              icon: Icons.shield,
+              title: 'Ready',
+              lines: [
+                'This runs public ping and authenticated read-only server checks.',
+                'Use LAN or VPN access for a private Docker Immich server.',
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPanel extends StatelessWidget {
+  const _StatusPanel({
+    required this.icon,
+    required this.title,
+    required this.lines,
+    this.isError = false,
+  });
+
+  final IconData icon;
+  final String title;
+  final List<String> lines;
+  final bool isError;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final foreground = isError ? colorScheme.error : colorScheme.onSurface;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: isError ? colorScheme.error : colorScheme.outlineVariant,
+        ),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 20, color: foreground),
+                const SizedBox(width: 8),
+                Text(
+                  title,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: foreground),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            for (final line in lines)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(line),
+              ),
           ],
         ),
       ),
@@ -615,4 +898,16 @@ String? _blockedReason(PipelineStep step, {required bool canRun}) {
     return 'This confirm step is locked until its dry-run step succeeds in this app session.';
   }
   return null;
+}
+
+String _formatBytes(int bytes) {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  var value = bytes.toDouble();
+  var unitIndex = 0;
+  while (value >= 1024 && unitIndex < units.length - 1) {
+    value /= 1024;
+    unitIndex += 1;
+  }
+  final decimals = value >= 10 || unitIndex == 0 ? 0 : 1;
+  return '${value.toStringAsFixed(decimals)} ${units[unitIndex]}';
 }
