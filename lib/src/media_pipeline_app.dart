@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import 'immich_connection.dart';
+import 'memory_curator.dart';
 import 'immich_phone_checklist_store.dart';
 import 'pipeline_models.dart';
 import 'pipeline_runner.dart';
@@ -284,6 +285,11 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
                             icon: Icon(Icons.help_outline),
                             label: Text('Help'),
                           ),
+                          ButtonSegment(
+                            value: _AppMode.memories,
+                            icon: Icon(Icons.auto_awesome),
+                            label: Text('Memories'),
+                          ),
                         ],
                         selected: {_mode},
                         onSelectionChanged: _runningStepId == null
@@ -317,6 +323,7 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
                         ),
                         _AppMode.immich => const _ImmichNav(),
                         _AppMode.help => const _HelpNav(),
+                        _AppMode.memories => const _MemoriesNav(),
                       },
                     ),
                   ],
@@ -349,6 +356,7 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
                   onCheck: _checkImmichConnection,
                 ),
                 _AppMode.help => const _HelpDetail(),
+                _AppMode.memories => const _MemoryPreviewDetail(),
               },
             ),
           ],
@@ -358,7 +366,7 @@ class _PipelineHomePageState extends State<PipelineHomePage> {
   }
 }
 
-enum _AppMode { workflow, immich, help }
+enum _AppMode { workflow, immich, help, memories }
 
 class _ImmichNav extends StatelessWidget {
   const _ImmichNav();
@@ -414,6 +422,34 @@ class _NavHintTile extends StatelessWidget {
         title: Text(title),
         subtitle: Text(subtitle),
       ),
+    );
+  }
+}
+
+class _MemoriesNav extends StatelessWidget {
+  const _MemoriesNav();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+      children: const [
+        _NavHintTile(
+          icon: Icons.visibility,
+          title: 'Preview only',
+          subtitle: 'No Immich writes and no notifications.',
+        ),
+        _NavHintTile(
+          icon: Icons.rule,
+          title: 'Rules engine',
+          subtitle: 'Prior year, album, and location scoring.',
+        ),
+        _NavHintTile(
+          icon: Icons.filter_alt,
+          title: 'Default exclusions',
+          subtitle: 'Screenshots, receipts, blurry images, near-duplicates.',
+        ),
+      ],
     );
   }
 }
@@ -1033,6 +1069,139 @@ class _HelpDetail extends StatelessWidget {
   }
 }
 
+class _MemoryPreviewDetail extends StatelessWidget {
+  const _MemoryPreviewDetail();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final referenceDate = DateTime(2026, 5, 29);
+    final preview = buildMemoryPreviewCandidates(
+      referenceDate: referenceDate,
+      assets: [
+        MemoryPreviewAsset(
+          id: 'lisbon-1',
+          takenAt: DateTime(2024, 5, 27),
+          isFavorite: true,
+          albumNames: ['Lisbon Week'],
+          peopleNames: ['Leo'],
+          city: 'Lisbon',
+        ),
+        MemoryPreviewAsset(
+          id: 'lisbon-2',
+          takenAt: DateTime(2024, 5, 29),
+          albumNames: ['Lisbon Week'],
+          peopleNames: ['Ana'],
+          city: 'Lisbon',
+        ),
+        MemoryPreviewAsset(
+          id: 'lisbon-3',
+          takenAt: DateTime(2024, 5, 30),
+          albumNames: ['Lisbon Week'],
+          city: 'Lisbon',
+        ),
+        MemoryPreviewAsset(
+          id: 'receipt-1',
+          takenAt: DateTime(2024, 5, 29),
+          isReceipt: true,
+        ),
+      ],
+    );
+
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: ListView(
+        children: [
+          Text('Memory Curator Preview', style: textTheme.headlineSmall),
+          const SizedBox(height: 8),
+          const Text(
+            'Read-only local scoring preview. This does not call Immich, create memories, or store feedback.',
+          ),
+          const SizedBox(height: 20),
+          _StatusPanel(
+            icon: Icons.visibility,
+            title: 'Preview status',
+            lines: [
+              'Rules-based scoring only.',
+              'Reference date: 2026-05-29',
+              '${preview.candidates.length} candidates, ${preview.exclusions.length} excluded assets in sample data.',
+            ],
+          ),
+          const SizedBox(height: 16),
+          for (final candidate in preview.candidates)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: _MemoryPreviewCandidateCard(candidate: candidate),
+            ),
+          _MemoryPreviewExclusionPanel(exclusions: preview.exclusions),
+        ],
+      ),
+    );
+  }
+}
+
+class _MemoryPreviewCandidateCard extends StatelessWidget {
+  const _MemoryPreviewCandidateCard({required this.candidate});
+
+  final MemoryPreviewCandidate candidate;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    candidate.title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                Text('Score ${candidate.score}'),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('Assets: ${candidate.assetIds.join(', ')}'),
+            const SizedBox(height: 8),
+            for (final reason in candidate.reasons)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text('- $reason'),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MemoryPreviewExclusionPanel extends StatelessWidget {
+  const _MemoryPreviewExclusionPanel({required this.exclusions});
+
+  final List<MemoryPreviewExclusion> exclusions;
+
+  @override
+  Widget build(BuildContext context) {
+    return _StatusPanel(
+      icon: Icons.filter_alt,
+      title: 'Excluded assets',
+      lines: [
+        if (exclusions.isEmpty) 'No assets excluded in this preview.',
+        for (final exclusion in exclusions)
+          '${exclusion.assetId}: ${_exclusionLabel(exclusion.reason)}',
+      ],
+    );
+  }
+}
+
 class _HelpSection extends StatelessWidget {
   const _HelpSection({
     required this.icon,
@@ -1347,6 +1516,15 @@ String _formatBytes(int bytes) {
 }
 
 String _formatNullableCount(int? value) => value?.toString() ?? 'unavailable';
+
+String _exclusionLabel(MemoryPreviewExclusionReason reason) {
+  return switch (reason) {
+    MemoryPreviewExclusionReason.screenshot => 'screenshot',
+    MemoryPreviewExclusionReason.receipt => 'receipt',
+    MemoryPreviewExclusionReason.blurry => 'blurry image',
+    MemoryPreviewExclusionReason.nearDuplicate => 'near-duplicate',
+  };
+}
 
 IconData _failureIcon(ImmichConnectionIssue issue) {
   return switch (issue) {

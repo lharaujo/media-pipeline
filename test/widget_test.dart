@@ -134,6 +134,33 @@ void main() {
     expect(find.text('Background permissions reviewed'), findsOneWidget);
     expect(find.text('Notes'), findsOneWidget);
   });
+
+  testWidgets('shows memory curator preview candidates', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const MediaPipelineApp());
+
+    await tester.tap(find.text('Memories'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Memory Curator Preview'), findsOneWidget);
+    expect(find.text('Preview status'), findsOneWidget);
+    expect(find.text('This week in 2024'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Album: Lisbon Week'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Album: Lisbon Week'), findsOneWidget);
+    await tester.scrollUntilVisible(
+      find.text('Place: Lisbon'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Place: Lisbon'), findsOneWidget);
+    expect(find.text('Excluded assets'), findsOneWidget);
+    expect(find.text('receipt-1: receipt'), findsOneWidget);
+  });
 }
 
 class _FakeImmichClient extends ImmichApiClient {

@@ -62,6 +62,11 @@ Status: in progress. The desktop app now has an **Immich** section that keeps th
 - Show explainable scoring so the user can understand why a memory was chosen.
 - Exclude low-value assets by default, such as screenshots, receipts, blurry images, and near-duplicates when detectable.
 
+Status: in progress. The repo now includes a local preview scoring engine and a
+desktop-app preview panel that renders sample read-only candidates for prior
+year, album, and location groupings. The preview still does not call Immich or
+write memories.
+
 ## Phase 5: Create Memories In Immich
 
 - Add explicit user approval before creating or updating Immich memories.
