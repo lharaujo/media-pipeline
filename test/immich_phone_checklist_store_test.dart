@@ -19,6 +19,7 @@ void main() {
       ImmichPhoneBackupChecklist(
         id: 'phone-1',
         phoneName: 'Alex iPhone',
+        notes: 'First backup in progress',
         appInstalled: true,
         serverLoginConfirmed: true,
         albumsSelected: true,
@@ -40,6 +41,7 @@ void main() {
     expect(loaded, hasLength(1));
     expect(loaded.single.id, 'phone-1');
     expect(loaded.single.phoneName, 'Alex iPhone');
+    expect(loaded.single.notes, 'First backup in progress');
     expect(loaded.single.appInstalled, isTrue);
     expect(loaded.single.serverLoginConfirmed, isTrue);
     expect(loaded.single.albumsSelected, isTrue);

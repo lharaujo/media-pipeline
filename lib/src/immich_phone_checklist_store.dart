@@ -5,6 +5,7 @@ class ImmichPhoneBackupChecklist {
   const ImmichPhoneBackupChecklist({
     required this.id,
     required this.phoneName,
+    required this.notes,
     required this.appInstalled,
     required this.serverLoginConfirmed,
     required this.albumsSelected,
@@ -17,6 +18,7 @@ class ImmichPhoneBackupChecklist {
     return ImmichPhoneBackupChecklist(
       id: id,
       phoneName: '',
+      notes: '',
       appInstalled: false,
       serverLoginConfirmed: false,
       albumsSelected: false,
@@ -30,6 +32,7 @@ class ImmichPhoneBackupChecklist {
     return ImmichPhoneBackupChecklist(
       id: _stringValue(json['id']) ?? _newChecklistId(),
       phoneName: _stringValue(json['phoneName']) ?? '',
+      notes: _stringValue(json['notes']) ?? '',
       appInstalled: _boolValue(json['appInstalled']),
       serverLoginConfirmed: _boolValue(json['serverLoginConfirmed']),
       albumsSelected: _boolValue(json['albumsSelected']),
@@ -43,6 +46,7 @@ class ImmichPhoneBackupChecklist {
 
   final String id;
   final String phoneName;
+  final String notes;
   final bool appInstalled;
   final bool serverLoginConfirmed;
   final bool albumsSelected;
@@ -53,6 +57,7 @@ class ImmichPhoneBackupChecklist {
   ImmichPhoneBackupChecklist copyWith({
     String? id,
     String? phoneName,
+    String? notes,
     bool? appInstalled,
     bool? serverLoginConfirmed,
     bool? albumsSelected,
@@ -63,6 +68,7 @@ class ImmichPhoneBackupChecklist {
     return ImmichPhoneBackupChecklist(
       id: id ?? this.id,
       phoneName: phoneName ?? this.phoneName,
+      notes: notes ?? this.notes,
       appInstalled: appInstalled ?? this.appInstalled,
       serverLoginConfirmed: serverLoginConfirmed ?? this.serverLoginConfirmed,
       albumsSelected: albumsSelected ?? this.albumsSelected,
@@ -77,6 +83,7 @@ class ImmichPhoneBackupChecklist {
     return {
       'id': id,
       'phoneName': phoneName,
+      'notes': notes,
       'appInstalled': appInstalled,
       'serverLoginConfirmed': serverLoginConfirmed,
       'albumsSelected': albumsSelected,
