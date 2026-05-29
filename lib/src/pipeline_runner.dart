@@ -35,6 +35,13 @@ class PipelineRunner {
       process.stderr.transform(utf8.decoder).listen(capture),
     ];
 
+    final stdinText = step.command.stdinText;
+    if (stdinText != null) {
+      process.stdin.write(stdinText);
+      await process.stdin.flush();
+    }
+    await process.stdin.close();
+
     final exitCode = await process.exitCode;
     await Future.wait<void>([
       for (final subscription in subscriptions) subscription.cancel(),

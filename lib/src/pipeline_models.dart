@@ -44,10 +44,11 @@ class PipelineSettings {
 }
 
 class PipelineCommand {
-  const PipelineCommand(this.executable, this.arguments);
+  const PipelineCommand(this.executable, this.arguments, {this.stdinText});
 
   final String executable;
   final List<String> arguments;
+  final String? stdinText;
 }
 
 class PipelineStep {

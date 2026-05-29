@@ -34,7 +34,8 @@ flutter run -d windows
 3. Install or configure missing dependencies outside the app when needed.
 4. Run pipeline steps in order.
 5. Run duplicate cleanup dry-run and inspect the log output.
-6. Use confirm cleanup only after the dry-run step succeeds in the same app session.
+6. If needed, run confirm cleanup via CLI after reviewing the dry-run output
+   (confirm is not yet available in the app UI).
 
 ## Help Section
 
@@ -48,6 +49,11 @@ The app includes an **Immich Help** section for the parts users normally need wh
 - Google Takeout localized year duplicates and the dry-run cleanup step;
 - future private memories and notification direction;
 - database and media backup safety.
+
+The runner can now pass typed stdin to child processes, but the duplicate
+cleanup confirm action still stays separate from the dry-run action. The design
+note for the typed confirm UI lives in
+[`docs/IMMICH_DUPLICATE_CONFIRM_MODE.md`](IMMICH_DUPLICATE_CONFIRM_MODE.md).
 
 The full source-backed help library is maintained in [`docs/IMMICH_HELP_LIBRARY.md`](IMMICH_HELP_LIBRARY.md). The major implementation plan for mobile backup guidance, memories, notifications, and a future personal ranking model is maintained in [`docs/MEMORIES_AND_MOBILE_PLAN.md`](MEMORIES_AND_MOBILE_PLAN.md).
 
