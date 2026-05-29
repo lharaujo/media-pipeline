@@ -130,7 +130,7 @@ void main() {
       },
     );
 
-    test('accepts alternate statistics keys and ignores invalid values', () async {
+    test('accepts alternate statistics keys and ignores null or invalid values', () async {
       final client = ImmichApiClient(
         get: (uri, headers) async {
           return switch (uri.path) {
@@ -145,8 +145,10 @@ void main() {
             '/api/server/statistics' => ImmichHttpResponse(
               statusCode: 200,
               body: jsonEncode({
+                'photos': null,
                 'photoCount': '1200',
                 'videoCount': 'not-a-number',
+                'usageBytes': null,
                 'storageUsageBytes': 987654321.0,
               }),
             ),
