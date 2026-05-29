@@ -78,6 +78,7 @@ Current app status:
 - shows Immich help and private-server setup guidance;
 - checks Immich with read-only API requests and a statistics panel;
 - tracks phone backup setup in a local non-secret checklist.
+- includes a dry-run step for Google Takeout localized duplicate cleanup in the Immich library.
 
 Useful docs:
 
