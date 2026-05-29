@@ -31,6 +31,26 @@ Immich can automatically upload selected albums when the app opens/resumes and p
 
 The desktop app also keeps a local phone checklist so you can track which devices are ready without storing secrets. The checklist is saved as JSON in the app's local data folder.
 
+## How To Create An Immich API Key
+
+Use an API key only for your own private or local Immich server. Do not paste keys into public issue reports, screenshots, shared docs, or Git-tracked files.
+
+1. Open the Immich web app on your private server.
+2. Select the user icon in the top-right corner.
+3. Open **Account Settings**.
+4. Go to API keys.
+5. Create a new key for this desktop app.
+6. Copy the key into the app only when you need to run a connection check.
+
+The desktop app keeps the key in memory for the current app session and does not save it to the local checklist JSON file.
+
+Required access:
+
+- `server.about` for authenticated server information and version checks.
+- `server.statistics` when available if you want photo count, video count, and storage usage.
+
+If `server.statistics` is unavailable or not allowed, the app should still verify the server and show statistics as unavailable.
+
 ## Android Backup Notes
 
 - Disable battery optimization for Immich if background backup stalls or only runs while the app is open.
