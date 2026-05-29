@@ -179,11 +179,23 @@ class ImmichApiClient {
       licensed: aboutJson['licensed'] is bool
           ? aboutJson['licensed'] as bool
           : null,
-      photos: _intValue(statisticsJson['photos']),
-      videos: _intValue(statisticsJson['videos']),
-      usageBytes:
-          _intValue(statisticsJson['usage']) ??
-          _intValue(statisticsJson['usageByUser']),
+      photos: _intValueFromKeys(statisticsJson, const [
+        'photos',
+        'photoCount',
+        'photosCount',
+      ]),
+      videos: _intValueFromKeys(statisticsJson, const [
+        'videos',
+        'videoCount',
+        'videosCount',
+      ]),
+      usageBytes: _intValueFromKeys(statisticsJson, const [
+        'usage',
+        'usageByUser',
+        'usageBytes',
+        'storageUsage',
+        'storageUsageBytes',
+      ]),
       message: statisticsJson.isEmpty
           ? statisticsNote ??
                 'Server info verified. Statistics were not available with this key.'
@@ -300,6 +312,22 @@ int? _intValue(Object? value) {
   }
   if (value is num) {
     return value.round();
+  }
+  if (value is String) {
+    return int.tryParse(value.trim());
+  }
+  return null;
+}
+
+int? _intValueFromKeys(
+  Map<String, Object?> map,
+  List<String> keys,
+) {
+  for (final key in keys) {
+    final value = _intValue(map[key]);
+    if (value != null) {
+      return value;
+    }
   }
   return null;
 }
