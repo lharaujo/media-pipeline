@@ -108,11 +108,16 @@ class ImmichApiClient {
 
     final headers = {'x-api-key': settings.apiKey.trim()};
     final about = await _request(apiBase.resolve('server/about'), headers);
-    if (about.statusCode == HttpStatus.unauthorized ||
-        about.statusCode == HttpStatus.forbidden) {
+    if (about.statusCode == HttpStatus.unauthorized) {
       throw const ImmichConnectionException(
         ImmichConnectionIssue.invalidApiKey,
         'The Immich API key was rejected. Create a fresh key in the web app and make sure it can read server.about.',
+      );
+    }
+    if (about.statusCode == HttpStatus.forbidden) {
+      throw const ImmichConnectionException(
+        ImmichConnectionIssue.missingPermission,
+        'The Immich API key can reach the server, but it lacks permission to read server.about.',
       );
     }
     if (about.statusCode < 200 || about.statusCode >= 300) {
@@ -141,8 +146,10 @@ class ImmichApiClient {
       );
       if (statistics.statusCode >= 200 && statistics.statusCode < 300) {
         statisticsJson = _decodeObject(statistics.body, context: 'server/statistics');
-      } else if (statistics.statusCode == HttpStatus.unauthorized ||
-          statistics.statusCode == HttpStatus.forbidden) {
+      } else if (statistics.statusCode == HttpStatus.unauthorized) {
+        statisticsNote =
+            'Server info is verified, but this API key is invalid for server.statistics.';
+      } else if (statistics.statusCode == HttpStatus.forbidden) {
         statisticsNote =
             'Server info is verified, but this API key lacks server.statistics permission.';
       } else {

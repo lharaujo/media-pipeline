@@ -71,6 +71,7 @@ Replace `http://localhost:2283` with your own private Immich URL and `YOUR_API_K
 
 Common failure meanings:
 
+- `Invalid URL` usually means the server URL is malformed. Check the scheme, host, port, path, whitespace, and typos so the app can reach the right Immich base URL.
 - `Server unreachable` usually means the URL is wrong, the container is down, or the app cannot reach your LAN/VPN network.
 - `API key rejected` usually means the key is invalid or missing `server.about` access.
 - `Missing permission` means the key can talk to Immich, but it does not have `server.statistics`; the app can still verify the server and read basic info.

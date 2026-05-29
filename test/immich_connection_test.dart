@@ -187,6 +187,40 @@ void main() {
       );
     });
 
+    test('reports missing permission for a forbidden about request', () async {
+      final client = ImmichApiClient(
+        get: (uri, headers) async {
+          return switch (uri.path) {
+            '/api/server/ping' => const ImmichHttpResponse(
+              statusCode: 200,
+              body: '{"res":"pong"}',
+            ),
+            '/api/server/about' => const ImmichHttpResponse(
+              statusCode: 403,
+              body: '{}',
+            ),
+            _ => const ImmichHttpResponse(statusCode: 404, body: '{}'),
+          };
+        },
+      );
+
+      await expectLater(
+        client.check(
+          const ImmichConnectionSettings(
+            serverUrl: 'http://localhost:2283',
+            apiKey: 'secret',
+          ),
+        ),
+        throwsA(
+          isA<ImmichConnectionException>().having(
+            (error) => error.issue,
+            'issue',
+            ImmichConnectionIssue.missingPermission,
+          ),
+        ),
+      );
+    });
+
     test('reports missing statistics permission without failing the check', () async {
       final client = ImmichApiClient(
         get: (uri, headers) async {
