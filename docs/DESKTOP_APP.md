@@ -49,6 +49,9 @@ The app includes an **Immich Help** section for the parts users normally need wh
 - future private memories and notification direction;
 - database and media backup safety.
 
+The duplicate cleanup confirm path is still CLI-only. The design note for
+adding a typed confirm UI lives in [`docs/IMMICH_DUPLICATE_CONFIRM_MODE.md`](IMMICH_DUPLICATE_CONFIRM_MODE.md).
+
 The full source-backed help library is maintained in [`docs/IMMICH_HELP_LIBRARY.md`](IMMICH_HELP_LIBRARY.md). The major implementation plan for mobile backup guidance, memories, notifications, and a future personal ranking model is maintained in [`docs/MEMORIES_AND_MOBILE_PLAN.md`](MEMORIES_AND_MOBILE_PLAN.md).
 
 ## Immich Connection
