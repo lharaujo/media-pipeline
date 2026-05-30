@@ -27,8 +27,10 @@ user approval before any remote write happens.
    - the exact write action to be performed;
    - the Immich account/server being targeted.
 4. Require a clear affirmative action before sending any write request.
-5. After success, store the returned memory identifier locally with the
-   candidate metadata.
+5. Before sending the remote request, create a durable local `pending` record
+   for the candidate with a generated idempotency token.
+6. After success, update that local record with the returned memory identifier
+   and mark it `committed`.
 
 ## Write Rules
 
@@ -37,7 +39,8 @@ user approval before any remote write happens.
   write flow.
 - Do not write sidecar files unless a future setting explicitly enables them.
 - Keep the dry-run preview as the default action.
-- If the remote request fails, leave the local preview candidate unchanged.
+- If the remote request fails, leave the local preview candidate unchanged and
+  keep the local record in `pending` so the user can retry safely.
 
 ## Local State
 
@@ -46,6 +49,8 @@ The app should store only non-secret metadata needed to manage future updates:
 - candidate identifier;
 - remote memory identifier;
 - selected state or approval state;
+- write state (`pending` or `committed`);
+- idempotency token for the write attempt;
 - timestamps for local bookkeeping.
 
 Do not store API keys, personal URLs, or media paths in this local record.
@@ -56,8 +61,13 @@ Do not store API keys, personal URLs, or media paths in this local record.
   the request.
 - If the server returns an error, surface it in the UI and keep the candidate
   in preview mode.
-- If the local record cannot be written, do not silently proceed with a remote
-  change.
+- If the local `pending` record cannot be written, do not send the remote
+  request.
+- If the remote write succeeds but the local record cannot be finalized, keep
+  the record in `pending`, surface a warning in the UI, and retry finalization
+  on the next app launch or explicit retry action.
+- Use the stored idempotency token when retrying the remote request so a
+  repeated submission does not create a duplicate memory.
 
 ## Future Implementation Boundary
 
