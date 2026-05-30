@@ -227,7 +227,7 @@ class ImmichApiClient {
       );
     }
 
-    final response = await _post(
+    final response = await _postRequest(
       apiBase.resolve('search/metadata'),
       {
         'x-api-key': apiKey,
@@ -283,6 +283,26 @@ class ImmichApiClient {
   ) async {
     try {
       return await _get(uri, headers);
+    } on TimeoutException {
+      throw const ImmichConnectionException(
+        ImmichConnectionIssue.serverUnavailable,
+        'Immich server timed out. Check the URL, your network, and any VPN or Docker port forwarding.',
+      );
+    } on SocketException catch (error) {
+      throw ImmichConnectionException(
+        ImmichConnectionIssue.serverUnavailable,
+        'Immich server is not reachable: ${error.message}',
+      );
+    }
+  }
+
+  Future<ImmichHttpResponse> _postRequest(
+    Uri uri,
+    Map<String, String> headers,
+    String body,
+  ) async {
+    try {
+      return await _post(uri, headers, body);
     } on TimeoutException {
       throw const ImmichConnectionException(
         ImmichConnectionIssue.serverUnavailable,
