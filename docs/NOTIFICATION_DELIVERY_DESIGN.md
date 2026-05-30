@@ -74,8 +74,8 @@ Before implementation begins, keep validating the current preview and beta
 gates:
 
 ```bash
-flutter test test/widget_test.dart --plain-name "backup troubleshooting"
-flutter test test/widget_test.dart --plain-name "memory write draft"
+flutter test test/widget_test.dart --plain-name "queues a local memory write draft after approval"
+flutter test test/widget_test.dart --plain-name "rejects a memory write draft with the wrong approval phrase"
 flutter test
 flutter analyze
 python3 -m unittest discover -s tests
