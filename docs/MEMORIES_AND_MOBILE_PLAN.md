@@ -146,10 +146,10 @@ until that design is reviewed.
 - Train or tune a lightweight local ranker only after enough feedback exists.
 - Keep all feedback and scoring data local unless the user explicitly exports it.
 
-Status: design in progress. The Phase 7 boundary is documented in
-[`docs/RANKING_FEEDBACK_DESIGN.md`](RANKING_FEEDBACK_DESIGN.md), but the app
-does not yet collect or score ranking feedback. The current work remains
-read-only and local.
+Status: in progress. The app now includes an opt-in local feedback scaffold in
+the Memories panel, and the Phase 7 boundary is documented in
+[`docs/RANKING_FEEDBACK_DESIGN.md`](RANKING_FEEDBACK_DESIGN.md). The current
+work still stays local and does not yet change ranking scores.
 
 ## App Help Library Sources
 
