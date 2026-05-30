@@ -24,6 +24,16 @@ void main() {
     expect(find.text('Phone Backup'), findsOneWidget);
     expect(find.text('Private Docker Server'), findsOneWidget);
     await tester.scrollUntilVisible(
+      find.text('Backup Troubleshooting'),
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Backup Troubleshooting'), findsOneWidget);
+    expect(
+      find.textContaining('If the server URL is wrong'),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
       find.text('Takeout Duplicates'),
       200,
       scrollable: find.byType(Scrollable).last,
