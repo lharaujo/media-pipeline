@@ -2,6 +2,18 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:media_pipeline_app/src/memory_curator.dart';
 
 void main() {
+  test('builds the sample memory preview assets', () {
+    final assets = buildMemoryPreviewSampleAssets();
+
+    expect(assets, hasLength(4));
+    expect(assets.map((asset) => asset.id), [
+      'lisbon-1',
+      'lisbon-2',
+      'lisbon-3',
+      'receipt-1',
+    ]);
+  });
+
   test('builds prior-year memory candidates without writing to Immich', () {
     final result = buildMemoryPreviewCandidates(
       referenceDate: DateTime(2026, 5, 29),
