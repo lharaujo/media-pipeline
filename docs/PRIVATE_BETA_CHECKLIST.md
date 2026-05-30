@@ -13,15 +13,44 @@ This checklist defines what must be true before the Immich work is treated as pr
 ## Required Smoke Tests
 
 - Verify the app can reach a private Immich server over localhost, LAN, or VPN.
+  ```bash
+  flutter test --plain-name "Immich connection"
+  ```
 - Verify ping-only behavior still works when no API key is entered.
+  ```bash
+  flutter test --plain-name "ping-only"
+  ```
 - Verify authenticated server info works with a valid API key.
+  ```bash
+  flutter test --plain-name "authenticated server info"
+  ```
 - Verify missing statistics do not break the connection check.
+  ```bash
+  flutter test --plain-name "missing statistics"
+  ```
 - Verify the phone backup checklist persists locally and does not store secrets.
+  ```bash
+  flutter test --plain-name "phone backup checklist"
+  ```
 - Verify the phone backup troubleshooting section renders in the app help view.
+  ```bash
+  flutter test --plain-name "backup troubleshooting"
+  ```
 - Verify the memory preview panel still shows sample-ready, loading, empty, and
   error states.
+  ```bash
+  flutter test --plain-name "memory preview"
+  ```
 - Verify the memory preview docs stay read-only and do not describe any write
   path.
+  ```bash
+  flutter test --plain-name "memory preview"
+  flutter analyze
+  python3 -m unittest discover -s tests
+  python3 -m compileall scripts config tests
+  ruff check scripts config tests
+  shfmt -d scripts/*.sh config/*.sh
+  ```
 
 ## Supported Platforms For Beta
 
