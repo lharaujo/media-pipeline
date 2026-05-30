@@ -1078,34 +1078,7 @@ class _MemoryPreviewDetail extends StatelessWidget {
     final referenceDate = DateTime(2026, 5, 29);
     final preview = buildMemoryPreviewCandidates(
       referenceDate: referenceDate,
-      assets: [
-        MemoryPreviewAsset(
-          id: 'lisbon-1',
-          takenAt: DateTime(2024, 5, 27),
-          isFavorite: true,
-          albumNames: ['Lisbon Week'],
-          peopleNames: ['Leo'],
-          city: 'Lisbon',
-        ),
-        MemoryPreviewAsset(
-          id: 'lisbon-2',
-          takenAt: DateTime(2024, 5, 29),
-          albumNames: ['Lisbon Week'],
-          peopleNames: ['Ana'],
-          city: 'Lisbon',
-        ),
-        MemoryPreviewAsset(
-          id: 'lisbon-3',
-          takenAt: DateTime(2024, 5, 30),
-          albumNames: ['Lisbon Week'],
-          city: 'Lisbon',
-        ),
-        MemoryPreviewAsset(
-          id: 'receipt-1',
-          takenAt: DateTime(2024, 5, 29),
-          isReceipt: true,
-        ),
-      ],
+      assets: buildMemoryPreviewSampleAssets(),
     );
 
     return Padding(
