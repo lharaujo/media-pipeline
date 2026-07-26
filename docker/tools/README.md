@@ -122,11 +122,9 @@ docker run --rm -it media-pipeline-tools:local bash
 The image runs as a non-root user (`tools`, uid 10000) with `WORKDIR /work` by default — this
 is a safe default for standalone verification so any files the container creates aren't
 root-owned. For the real bind-mount use case, `ToolsContainer.start()`
-(`lib/src/tools_container.dart`, #76 Phase 3) overrides this at `docker run` time with `--user
-<host-uid>:<host-gid>` (auto-detected via `id -u`/`id -g` on Linux/macOS), so files the
+(`lib/src/tools_container.dart`, #76 Phase 3) overrides this at `docker run` time with `--user <host-uid>:<host-gid>` (auto-detected via `id -u`/`id -g` on Linux/macOS), so files the
 container creates on a bind-mounted host directory come out owned by the real host user instead
-of uid 10000. That override only applies when going through `ToolsContainer`; a bare `docker
-run` like the one above still runs as the baked-in `tools` user, unchanged. Windows UID/GID
+of uid 10000. That override only applies when going through `ToolsContainer`; a bare `docker run` like the one above still runs as the baked-in `tools` user, unchanged. Windows UID/GID
 handling under Docker Desktop's Linux VM is a different problem and remains open (#76 Phase 5).
 
 To run a single tool without a shell:
@@ -176,8 +174,7 @@ Mirrors the version-bump discipline in `.github/workflows/gitleaks.yml`'s inline
    `CZKAWKA_VERSION`, `CZKAWKA_SHA256_AMD64`, `CZKAWKA_SHA256_ARM64` in the `Dockerfile`.
 4. **`sha256sum` / GNU coreutils** (transitive, via the base image — see "GNU coreutils /
    `sha256sum`" above): whenever step 1 re-pins the `FROM debian:bookworm-slim@sha256:...`
-   digest, re-run `docker run --rm media-pipeline-tools:local bash -c "sha256sum --version |
-   head -1; dpkg -s coreutils | grep Version"` against the rebuilt image and update the
+   digest, re-run `docker run --rm media-pipeline-tools:local bash -c "sha256sum --version | head -1; dpkg -s coreutils | grep Version"` against the rebuilt image and update the
    version numbers in the table and that section if they changed. No separate `Dockerfile`
    change is needed (there is no explicit coreutils pin to update) — this step is purely
    about keeping this document's recorded version accurate, not about changing pinning
