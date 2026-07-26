@@ -141,12 +141,10 @@ quit/decline paths make zero filesystem changes. shellcheck/shfmt clean.
 ## Phase 6 — First-time drive setup: real-machine fixes (2026-07-12)
 
 **Context:** The repo owner ran the just-merged `scripts/00b_first_time_drive_setup.sh`
-(Phase 5) against a real machine and hit two bugs (#57). Bug 1: unprivileged `blkid -o value
--s TYPE` returned nothing for a real, valid ext4 partition even though `sudo blkid` correctly
+(Phase 5) against a real machine and hit two bugs (#57). Bug 1: unprivileged `blkid -o value -s TYPE` returned nothing for a real, valid ext4 partition even though `sudo blkid` correctly
 reported it, so the script showed `filesystem=unknown` and aborted when the partition was
 selected — unusable without a manual `sudo blkid` workaround. Bug 2: `root_boot_disk()`
-printed malformed, duplicated multi-line output (`"==> Boot/root disk detected as: \n
-nvme0n1\nnvme0n1 (always excluded from candidates)"` instead of a single clean line) — a
+printed malformed, duplicated multi-line output (`"==> Boot/root disk detected as: \n nvme0n1\nnvme0n1 (always excluded from candidates)"` instead of a single clean line) — a
 fragility risk on the script's top safety property (boot-disk exclusion), even though
 exclusion still worked correctly in the reported case.
 **Root causes:** Bug 1 — `blkid` needs root to reliably probe raw block devices for
@@ -466,8 +464,7 @@ silently dropped from the human-facing view. All pre-existing confirm-gate tests
 
 ## Phase 12 — Pin gitleaks CLI version instead of floating @latest (2026-07-14)
 
-**Context:** #73. `gitleaks.yml` installed the gitleaks CLI via `go install
-github.com/zricethezav/gitleaks/v8@latest` against a hardcoded `go-version: '1.21'`. Gitleaks
+**Context:** #73. `gitleaks.yml` installed the gitleaks CLI via `go install github.com/zricethezav/gitleaks/v8@latest` against a hardcoded `go-version: '1.21'`. Gitleaks
 v8.30.1 shipped requiring `go >= 1.24.11` per its own `go.mod`, so the floating `@latest`
 started resolving to a release the pinned Go toolchain couldn't build — breaking the mandatory
 gitleaks security gate intermittently/permanently on every PR regardless of that PR's content
@@ -489,8 +486,7 @@ needs, which could silently recreate this exact failure class. Tightened to the 
 the existing SHA-pinned `actions/checkout`/`actions/setup-go` steps untouched — only the
 floating `@latest` install and the Go version needed to move.
 **Outcome:** `.github/workflows/gitleaks.yml`'s install step now reads
-`go install "github.com/zricethezav/gitleaks/v8@${GITLEAKS_VERSION}"` with `GITLEAKS_VERSION:
-v8.30.1` pinned as a step `env`, and `go-version: '1.24.13'` (exact patch, not a bare minor),
+`go install "github.com/zricethezav/gitleaks/v8@${GITLEAKS_VERSION}"` with `GITLEAKS_VERSION: v8.30.1` pinned as a step `env`, and `go-version: '1.24.13'` (exact patch, not a bare minor),
 plus inline comments giving the exact commands (proxy.golang.org `.mod`/`/list` and go.dev/dl
 JSON lookups) to check compatibility and bump `GITLEAKS_VERSION` and the exact `go-version`
 patch together the next time a deliberate upgrade is needed, so this doesn't silently drift
@@ -530,8 +526,7 @@ group that calls the real `lsblk`/`blkid`/`findmnt` on whatever Linux machine ru
 end-to-end tests: `rootBootDisk` resolves to a disk lsblk actually reports, the ancestor-chain
 query for that disk reports zero `TYPE=part` rows, `candidatePartitions` never includes a
 partition on the real boot disk, and `detectFstype` returns a real filesystem type for the
-root partition without needing the sudo fallback. Full suite: `flutter analyze` clean, `flutter
-test` 126/126 passing (up from 101), including the new real-machine tests running live during
+root partition without needing the sudo fallback. Full suite: `flutter analyze` clean, `flutter test` 126/126 passing (up from 101), including the new real-machine tests running live during
 CI/local verification on this Linux dev box.
 ## Phase 14 — Tools container image, Phase 1 of #76 (2026-07-14)
 
@@ -581,8 +576,7 @@ a pure `reconstructOriginalPath()` (strips the `$MEDIA_TRASH/` prefix and prepen
 mirroring the Bash script's `rel="${f#"$MEDIA_TRASH"/}"; dest="/$rel"`) plus a pure
 `parentDirectory()` (`dirname` equivalent), and a thin `TrashRestorer` class doing the actual
 `Directory.list(recursive: true)` walk and `File.rename` move. No-clobber semantics
-(`mv -n`) are replicated exactly: an existing destination is left alone (`RestoreAction
-.skippedExisting`), never overwritten, and the trashed duplicate stays in `media_trash`,
+(`mv -n`) are replicated exactly: an existing destination is left alone (`RestoreAction.skippedExisting`), never overwritten, and the trashed duplicate stays in `media_trash`,
 unresolved but never deleted. `TrashRestorer.run(confirm: false)` (the default) only computes and
 returns what *would* happen, touching nothing on disk — proven with real temp-directory
 mtime/content assertions, not just log-string checks. `File.rename`'s cross-filesystem limitation
@@ -804,8 +798,7 @@ canonical `YYYY/*` file by basename, size, AND SHA-256 hash, and moves verified 
   `Fotos de YYYY` directory-name match), `verifyTakeoutDuplicateCandidate` (the three-way
   basename+size+hash verification, with every filesystem access injectable via `FileSizer`/
   `FileHasher`/`PathExistsChecker` so the decision branching is directly unit-testable without
-  real files), and `TakeoutDuplicateCleaner.run` (the async orchestration walking `Fotos de
-  YYYY`/`YYYY` directory pairs and delegating the actual move to the shared `SafeFileMover`).
+  real files), and `TakeoutDuplicateCleaner.run` (the async orchestration walking `Fotos de YYYY`/`YYYY` directory pairs and delegating the actual move to the shared `SafeFileMover`).
   Same "port the logic, defer the wiring" pattern as the two prior ports: `pipeline_models.dart`
   / `media_pipeline_app.dart` are untouched, and the actual executed pipeline step still shells
   out to the real `scripts/12_clean_immich_takeout_duplicates.sh`.
@@ -834,8 +827,7 @@ test** that runs the real `scripts/12_clean_immich_takeout_duplicates.sh` (via `
 synthetic fixture with four candidates — a genuine verified duplicate, a **size-mismatch** case, a
 **hash-mismatch-despite-matching-size** case (the adversarial case proving the three-way check isn't
 weakened to size-only), and a missing-canonical-file case — and asserts identical
-verified/size-mismatch/hash-mismatch/missing-canonical decisions and identical `Candidates
-inspected`/`Verified duplicates` counters between the two implementations. `flutter analyze`: no
+verified/size-mismatch/hash-mismatch/missing-canonical decisions and identical `Candidates inspected`/`Verified duplicates` counters between the two implementations. `flutter analyze`: no
 issues. `flutter test`: 208/208 passing (27 new). `scripts/12_clean_immich_takeout_duplicates.sh` itself
 is untouched — additive only, remains the working fallback.
 **Pivots:** None from the original plan; the hashing-dependency and confirm-phrase design questions
@@ -898,8 +890,7 @@ test: a **Bash-vs-Dart parity test** that runs the real `scripts/13_dedupe_live_
 all five required scenarios — a valid short-duration pair, an over-duration video (rejected), a
 missing-still case (skipped), a duration-unknown pair within timestamp proximity (fallback accepts),
 and a duration-unknown pair NOT within proximity (fallback rejects) — and asserts identical
-per-video decisions and identical `Candidates inspected`/`Verified pairs`/`Missing paired
-still`/`Video too long`/`Duration unknown (total)`/`Skipped, ambiguous match` counters between the
+per-video decisions and identical `Candidates inspected`/`Verified pairs`/`Missing paired still`/`Video too long`/`Duration unknown (total)`/`Skipped, ambiguous match` counters between the
 two implementations. `flutter analyze`: no issues. `flutter test`: 241/241 passing (33 new).
 `scripts/13_dedupe_live_photos.sh` itself is untouched — additive only, remains the working
 fallback.
@@ -1074,15 +1065,12 @@ deferred to subsequent Phase 2 PRs, one consumer at a time, matching how Phase 0
 script at a time.
 
 **Added:** `lib/src/tools_container.dart`'s `ToolsContainer` class:
-- **Start:** `docker run -d --rm --init --label media-pipeline.tools-session=<id> -v
-  <hostMountRoot>:<containerMountPath> <image> sleep infinity`. `docker/tools/Dockerfile`'s own
-  `CMD` (`["bash"]`, no `ENTRYPOINT`) would exit immediately under a detached, non-TTY `docker
-  run` — rather than modify the Dockerfile (Phase 1 already shipped, reused unmodified here),
+- **Start:** `docker run -d --rm --init --label media-pipeline.tools-session=<id> -v <hostMountRoot>:<containerMountPath> <image> sleep infinity`. `docker/tools/Dockerfile`'s own
+  `CMD` (`["bash"]`, no `ENTRYPOINT`) would exit immediately under a detached, non-TTY `docker run` — rather than modify the Dockerfile (Phase 1 already shipped, reused unmodified here),
   `start()` overrides the container's command at the `docker run` invocation itself, a standard,
   supported Docker idiom for a long-lived exec target. `--init` was added after test development
   surfaced a real bug (see "Pivots" below).
-- **Exec:** `docker exec <container-id> <args...>`, returning the real `ProcessResult` `docker
-  exec` produced — the same shape `Process.run` returns, so a later consumer-wiring PR can swap a
+- **Exec:** `docker exec <container-id> <args...>`, returning the real `ProcessResult` `docker exec` produced — the same shape `Process.run` returns, so a later consumer-wiring PR can swap a
   direct `Process.run(tool, args)` host call for `container.exec([tool, ...args])` with no shape
   change at the call site.
 - **Stop:** `docker stop <id>` then an explicit `docker rm -f <id>` (see "Pivots" below for why
@@ -1113,8 +1101,7 @@ spaces, non-English characters, the outside-root and string-prefix-collision rej
 fake-docker-runner lifecycle tests exercising exact `docker run`/`exec`/`stop` argument shapes and
 every error path (non-zero exit, empty container ID, double-start, exec-before-start, idempotent
 stop, `withSession`'s cleanup-on-throw guarantee) without needing a real Docker daemon; and a
-real-Docker group, gated on a synchronous `docker version` + `docker image inspect
-media-pipeline-tools:local` availability check (mirroring `drive_detection_test.dart`'s
+real-Docker group, gated on a synchronous `docker version` + `docker image inspect media-pipeline-tools:local` availability check (mirroring `drive_detection_test.dart`'s
 `Platform.isLinux` skip pattern) so a CI run without Docker visibly skips rather than silently
 passing. Docker was available in this environment (the `media-pipeline-tools:local` image built
 locally from `docker/tools/Dockerfile` per its own README), so the real-Docker group actually ran:
@@ -1122,8 +1109,7 @@ locally from `docker/tools/Dockerfile` per its own README), so the real-Docker g
 `docker/tools/README.md`; the container was confirmed actually running via a real `docker inspect`
 call after `start()` and actually gone after `stop()`; a file written on the host was read back
 through its translated container path via a real `docker exec cat`; and `exec()` into an
-out-of-band-killed container failed rather than silently succeeding. A `docker ps -a --filter
-label=media-pipeline.tools-session` check after the full suite confirmed zero leaked containers.
+out-of-band-killed container failed rather than silently succeeding. A `docker ps -a --filter label=media-pipeline.tools-session` check after the full suite confirmed zero leaked containers.
 `flutter analyze`: no issues. `flutter test`: full suite green (323 tests).
 
 **Pivots:** Writing the "container is actually gone after `stop()`" real-Docker test caught a real
@@ -1328,8 +1314,7 @@ producing one parseable hex string on stdout with no filesystem side effects —
 closer to Phase 21's `ffprobe` migration than to Phase 22's archive-extraction one.
 
 **Decisions:**
-- **`sha256sum` routes through the container.** `containerFileHasher({required ToolsContainer
-  container})` translates the host file path via `ToolsContainer.hostToContainerPath` before every
+- **`sha256sum` routes through the container.** `containerFileHasher({required ToolsContainer container})` translates the host file path via `ToolsContainer.hostToContainerPath` before every
   `container.exec(['sha256sum', ...])` call, mirroring `containerFfprobeDurationReader`'s shape
   exactly. Throws `FileSystemException` on a non-zero exit — a hashing failure is always a loud
   error, never a silent "not a duplicate" verdict.
@@ -1401,16 +1386,14 @@ default for the image's own standalone verification, which generally does not ma
 test-runner's own UID — so files the container wrote onto the bind-mounted host directory came
 out owned by uid 10000, not the host user, and (symmetrically) host-created fixture files the
 fixed container uid lacked permission on failed to read from inside the container. All three
-PRs flagged this as an open Phase 3 gap and worked around it with test-only `chmod
-0777`/`0666` calls on their fixture directories/files, scoped to `test/**`, never `lib/**`.
+PRs flagged this as an open Phase 3 gap and worked around it with test-only `chmod 0777`/`0666` calls on their fixture directories/files, scoped to `test/**`, never `lib/**`.
 This phase closes that gap for real, rather than continuing to work around it.
 
 **Decision — `docker run --user <host-uid>:<host-gid>`, not an image change:**
 `ToolsContainer.start()` (`lib/src/tools_container.dart`) now passes `--user` to `docker run`,
 overriding the image's baked-in `tools` user for that one container instance — the standard
 Docker-on-Linux idiom for exactly this bind-mount-ownership problem. `docker/tools/Dockerfile`'s
-own `USER tools` default is untouched, so standalone/debugging use of the image (`docker run -it
-media-pipeline-tools:local bash`, no `--user`) behaves exactly as before; this is a per-run
+own `USER tools` default is untouched, so standalone/debugging use of the image (`docker run -it media-pipeline-tools:local bash`, no `--user`) behaves exactly as before; this is a per-run
 override, not an image change.
 
 - **Host UID/GID detection:** the new `ToolsContainer.detectHostUserFlag()` static method shells
@@ -1438,12 +1421,10 @@ override, not an image change.
   verified (`docker run --user "$(id -u):$(id -g)" ...`) and then covered by a dedicated
   Docker-gated test group (`test/tools_container_test.dart`, "ToolsContainer host UID/GID
   mapping"): `exiftool`, `ffmpeg`/`ffprobe`, `rclone`, `czkawka_cli`, and `sha256sum` all run
-  correctly; only `whoami`/username-lookup-style operations fail (`cannot find name for user ID
-  <uid>`), and none of these five tools rely on one.
+  correctly; only `whoami`/username-lookup-style operations fail (`cannot find name for user ID <uid>`), and none of these five tools rely on one.
 - **Real ownership proof, not just "no error was thrown."** The same new test group starts a
   real `ToolsContainer`, has it write a file onto the bind mount, and asserts via `stat -c %u`
-  that the resulting host-side file is owned by the real host UID (cross-checked against `id
-  -u`), not uid 10000 — and separately proves a pre-existing host-owned fixture file (created
+  that the resulting host-side file is owned by the real host UID (cross-checked against `id -u`), not uid 10000 — and separately proves a pre-existing host-owned fixture file (created
   with no `chmod`) is readable from inside the container without a permission error.
 - **Removed the chmod workarounds** in `test/dedupe_live_photos_test.dart`,
   `test/stitch_metadata_test.dart` (both the `tempDir`-level chmod and the
@@ -1488,8 +1469,7 @@ underneath all four already-reviewed consumer migrations.
 **Context:** Phase 0 (Dart ports of `drive_detection`/`delete_duplicates`/`clean_takeout_duplicates`/
 `dedupe_live_photos`/`stitch_metadata`/`restore_from_trash`) and Phase 2 (wiring those ports'
 external-tool calls to `ToolsContainer`, PRs #93-96) are done, but `pipeline_models.dart`'s
-`buildPipelineSteps()` still routes every single step through `PipelineCommand('bash'|'python3',
-[...])` — the ported Dart logic is fully tested but has no way to actually run as a live pipeline
+`buildPipelineSteps()` still routes every single step through `PipelineCommand('bash'|'python3', [...])` — the ported Dart logic is fully tested but has no way to actually run as a live pipeline
 step. This phase builds the plumbing that will let a later PR swap one step at a time from a
 subprocess to a direct Dart call, without touching which steps currently run Bash/Python.
 
@@ -1512,8 +1492,7 @@ pattern one field over).
 parameter already used, but `LogSink` previously lived in `pipeline_runner.dart`, which imports
 `pipeline_models.dart` — moving it the other direction would have created a cycle. Moved the
 typedef itself to `pipeline_models.dart` and added `export 'pipeline_models.dart' show LogSink;`
-to `pipeline_runner.dart`, so every existing `import 'package:media_pipeline_app/src/
-pipeline_runner.dart'` call site (test files included) keeps resolving `LogSink` with zero changes.
+to `pipeline_runner.dart`, so every existing `import 'package:media_pipeline_app/src/pipeline_runner.dart'` call site (test files included) keeps resolving `LogSink` with zero changes.
 
 **`PipelineRunner.run()` branches, subprocess path byte-for-byte unchanged:** if
 `step.dartAction` is set, it's called directly — in-process, no `Process.start`, given the same
@@ -1680,8 +1659,7 @@ than a callback-driven stream, and adding streaming callbacks to them was judged
 a wiring-only PR; `stitch-metadata` (the step actually expected to run long, given real archive
 extraction) does get true live streaming via `MetadataStitcher.run()`'s existing `print` parameter.
 
-**`requiredTools` chips updated to reflect what actually runs where:** `immich-takeout-duplicate-
-dry-run`'s chip changed from `sha256sum` to `docker` (the tool now runs inside a container, not on
+**`requiredTools` chips updated to reflect what actually runs where:** `immich-takeout-duplicate-dry-run`'s chip changed from `sha256sum` to `docker` (the tool now runs inside a container, not on
 the host); `stitch-metadata`'s changed from `python3, exiftool, rsync` to `docker, rsync`
 (`exiftool`/`unzip`/`tar` are container-routed; `rsync`, used only by the raw-Google-Drive merge
 step, still shells out on the host). Neither step's `linuxOnly`/OS-gating changed:
@@ -1723,8 +1701,7 @@ executes Dart-native logic instead of a subprocess, touching this repo's stated 
 ## Phase 27 — `delete-confirm`/`restore-confirm` wired to `dartAction`: the pipeline's two most destructive steps (2026-07-15)
 
 **Context:** Phase 26 (PR #100) migrated the four SAFE/dry-run-or-non-destructive steps to
-`dartAction` and deliberately left `delete-confirm`/`restore-confirm` (`PipelineRisk
-.confirmRequired`) on `command`, deferred to a dedicated future PR with extra review. This is that
+`dartAction` and deliberately left `delete-confirm`/`restore-confirm` (`PipelineRisk.confirmRequired`) on `command`, deferred to a dedicated future PR with extra review. This is that
 PR — the highest-risk step in the entire #76 migration, since these two steps are the ones that
 actually move files on disk with no dry-run safety net once triggered.
 
@@ -1741,8 +1718,7 @@ this PR only wires them in.
 was not modified by this PR and gates purely on `states`/`duplicateThumbnailReviewAcknowledged` —
 it never inspects `step.command`/`step.dartAction`, so it is structurally blind to which execution
 mechanism a step uses. Traced the actual call site: `media_pipeline_app.dart`'s
-`_runSelectedStep()` calls `canRunStep()` and returns early on failure *before* `_runner.run(step,
-...)` is ever invoked — this ordering is unchanged by this PR and applies identically whether
+`_runSelectedStep()` calls `canRunStep()` and returns early on failure *before* `_runner.run(step, ...)` is ever invoked — this ordering is unchanged by this PR and applies identically whether
 `step.dartAction` or `step.command` is set. There is no new path by which either `dartAction` can
 run without its gate having already been satisfied. The `requiresDuplicateThumbnailReview` gate
 (issue #49) is likewise a pure caller-side UI concern, orthogonal to execution mechanism — this PR
@@ -1770,8 +1746,7 @@ a hard script failure on the *first* collision, aborting the whole restore batch
 later file unprocessed. This is a real, pre-existing characteristic of the still-live Bash script
 (`restore_from_trash.dart`'s Dart port itself predates this PR — only its `dartAction` wiring is
 new here) — confirmed empirically against the real script, not inferred from documentation. The
-Dart `restore-confirm` dartAction does **not** inherit this bug: `TrashRestorer`/`SafeFileMover
-.moveNoClobber` already reports a collision as `RestoreAction.skippedExisting` and continues to the
+Dart `restore-confirm` dartAction does **not** inherit this bug: `TrashRestorer`/`SafeFileMover.moveNoClobber` already reports a collision as `RestoreAction.skippedExisting` and continues to the
 next file rather than throwing. A dedicated test
 (`test/confirm_step_dart_bash_mirror_parity_test.dart`'s `DISCOVERY: ...` group) proves this
 empirically on both sides — the real Bash script aborting non-zero, the real Dart dartAction
@@ -1840,8 +1815,7 @@ in, closing gap 1 of #103's five gaps (gaps 2-5 — macOS/Windows verification, 
 retirement — remain open, correctly sequenced after this one per #76's own roadmap).
 
 **ImageMagick/blur-scan decision (flagged explicitly per this task's own brief, matching Phase 0c's
-`stitch_metadata.dart` precedent): option (b) chosen — blur-scan is NOT ported, and `docker/tools
-/Dockerfile` is NOT touched.** `RUN_BLUR_SCAN` isn't consumed by any Dart module, UI, or report
+`stitch_metadata.dart` precedent): option (b) chosen — blur-scan is NOT ported, and `docker/tools/Dockerfile` is NOT touched.** `RUN_BLUR_SCAN` isn't consumed by any Dart module, UI, or report
 parser today — it's operator-facing-only output (`blurry_images.txt`), and adding ImageMagick would
 expand the tools image's multi-arch (amd64+arm64) surface for a feature nothing downstream depends
 on. Blur-scan capability is not silently dropped: `scripts/05_cleanup_scan.sh` (`RUN_BLUR_SCAN=1` by
@@ -1862,16 +1836,14 @@ copy, so no `docker exec cat` round-trip is needed) and copies the content to th
 location before deleting the temp directory in a `finally` block, success or failure.
 
 **Real discovery during parity verification: `czkawka_cli` needs a writable `$HOME`.** Manually
-exercising the real `czkawka_cli` binary (extracted from `media-pipeline-tools:local` via `docker
-cp`, run natively on the host) against a container started with `--user <host-uid>:<host-gid>` — the
+exercising the real `czkawka_cli` binary (extracted from `media-pipeline-tools:local` via `docker cp`, run natively on the host) against a container started with `--user <host-uid>:<host-gid>` — the
 exact override `ToolsContainer.start()` applies (Phase 3, #76) — surfaced a real bug this port had to
 route around: with no `$HOME` set (the arbitrary host uid has no matching `/etc/passwd` entry, so the
 default `$HOME` is `/`, unwritable by that uid), `czkawka_cli` panics writing its cache database and
 exits `101` — the exact "genuine crash" code this module's own exit-code classification exists to
 catch. Verified empirically: the same `dup` scan against real duplicate files panics (exit 101, no
 report written) with `$HOME` unset, and succeeds (exit 11, real report written) once `$HOME` points
-at a writable directory. Fixed by having every scan invocation pass `env HOME=<container-side temp
-dir>` ahead of `czkawka_cli`, reusing the same temp directory the report-staging decision above
+at a writable directory. Fixed by having every scan invocation pass `env HOME=<container-side temp dir>` ahead of `czkawka_cli`, reusing the same temp directory the report-staging decision above
 already needs — no extra directory/mount required. None of the other four `ToolsContainer` consumers
 needed this; they don't maintain a persistent cache database the way `czkawka_cli` does. This is a
 genuine, previously-unknown gap in Phase 3's `--user` override, surfaced only because this port
@@ -2128,8 +2100,7 @@ genuine-failure test's `mv: cannot move ... Permission denied` message didn't ma
 fix (`git stash pop`) and re-ran — both pass.
 
 Full suite after restoring the fix: `python3 -m unittest discover -s tests` — 53 tests, all pass
-(51 -> 53, net +2). `shellcheck -x -e SC1091 scripts/*.sh config/*.sh` — clean. `shfmt -d
-scripts/*.sh config/*.sh` — clean (no diff). `python3 -m compileall scripts config tests` —
+(51 -> 53, net +2). `shellcheck -x -e SC1091 scripts/*.sh config/*.sh` — clean. `shfmt -d scripts/*.sh config/*.sh` — clean (no diff). `python3 -m compileall scripts config tests` —
 clean. Closes #102.
 
 ## Phase 33 — ToolsContainer: writable `$HOME` for the arbitrary host UID, moved out of

@@ -38,6 +38,13 @@ repos:
         stages: [commit-msg]
         pass_filenames: true
 
+      - id: mdx-compat
+        name: MDX-compat markdown check
+        language: system
+        entry: python3 scripts/check-mdx-compat.py
+        types: [markdown]
+        stages: [pre-commit]
+
       - id: gitleaks
         name: gitleaks (staged diff)
         entry: |

@@ -334,8 +334,7 @@ Phase 0b destructive-script ports) into `pipeline_models.dart`/
 correct in isolation" and starts being what actually runs against Leo's
 real drive. Astrid's standing risk list for this step: (1) the
 collision-rename behavior hitting a live case for the first time, (2)
-making sure the confirm-gate is enforced exactly before any `.run(confirm:
-true)` call, (3) re-running every parity test against the actually-wired
+making sure the confirm-gate is enforced exactly before any `.run(confirm: true)` call, (3) re-running every parity test against the actually-wired
 path. Also still open: Phase 3 (UID/GID mapping — two live reproductions
 now on record) needs solving before any of this can run for real on a
 Linux host without root/chmod workarounds.
