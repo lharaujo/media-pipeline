@@ -167,12 +167,61 @@ def check_text(text: str, path: str) -> list[Issue]:
     return issues
 
 
+def _strip_escaped_braces(text: str) -> str:
+    """Remove backslash-escaped braces (`\\{` / `\\}`) from *text* so the bare-brace
+    check below doesn't false-positive on the sanctioned MDX escape (company-os#221).
+
+    This must consume characters left-to-right, CommonMark-escape-style, rather than
+    blindly regex-matching `\\[{}]` anywhere in the string: a naive regex also matches
+    the second backslash of an escaped-backslash (`\\\\`) followed by a brace, e.g.
+    `\\\\{bad\\\\}` — literally: escaped-backslash, BARE `{`, `bad`, BARE `}`,
+    escaped-backslash — which must still be flagged as a bare brace. Blindly removing
+    any `\\` + brace pair would eat the bare braces there too and silently pass a
+    real MDX-breaking doc. Walking left-to-right and consuming `\\\\` as its own unit
+    (emitting a placeholder, not a literal backslash, so it can't be re-paired with
+    the following character) avoids that false negative.
+    """
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        ch = text[i]
+        if ch == "\\" and i + 1 < n:
+            nxt = text[i + 1]
+            if nxt == "\\":
+                # Escaped backslash: consumes both chars. Emit a placeholder (NUL),
+                # not a literal backslash, so it can't combine with the *next*
+                # character to look like a fresh escape sequence.
+                out.append("\0")
+                i += 2
+                continue
+            if nxt in "{}":
+                # Escaped brace: consumes both chars, drop entirely (not bare).
+                i += 2
+                continue
+            # Backslash escaping something else (e.g. `\*`) — irrelevant to brace
+            # detection; keep both characters and move past the pair.
+            out.append(ch)
+            out.append(nxt)
+            i += 2
+            continue
+        out.append(ch)
+        i += 1
+    return "".join(out)
+
+
 def _scan_prose(text: str, path: str, lineno: int) -> list[Issue]:
     issues: list[Issue] = []
     if not text:
         return issues
 
-    if "{" in text or "}" in text:
+    # Backslash-escaped braces (`\{` / `\}` in the raw markdown) are the sanctioned
+    # MDX escape (company-os#221) — strip them before checking for bare braces so a
+    # correctly-escaped doc doesn't false-positive. Genuinely bare braces elsewhere in
+    # the same text must still be caught.
+    unescaped_text = _strip_escaped_braces(text)
+
+    if "{" in unescaped_text or "}" in unescaped_text:
         issues.append(
             Issue(
                 path,
@@ -246,6 +295,23 @@ PAIRSORTER_README_PRE_17 = (
 )
 
 
+ESCAPED_BRACES_CLEAN = (
+    "Use the sanctioned MDX escape: \\{escaped\\} — this is not a JSX expression.\n"
+)
+
+MIXED_ESCAPED_AND_BARE = (
+    "This is fine: \\{ok\\} but this is not: {bad}\n"
+)
+
+# Regression fixture (Cody review, PR #54): an escaped BACKSLASH immediately
+# followed by a BARE brace, e.g. `prefix \\{bad\\} suffix` — literally: escaped
+# backslash, then a bare (unescaped) `{`, then `bad`, then a bare `}`, then an
+# escaped backslash. A naive `re.sub(r"\\[{}]", "", text)` also matches the
+# second backslash of `\\` against the following brace and strips it, silently
+# hiding the bare braces. Must still be flagged.
+ESCAPED_BACKSLASH_THEN_BARE_BRACE = "prefix \\\\{bad\\\\} suffix\n"
+
+
 def run_self_test() -> int:
     failures = 0
 
@@ -288,6 +354,33 @@ def run_self_test() -> int:
         failures += 1
     else:
         print("PASS: no false positive on fixed README.md text")
+
+    issues = check_text(ESCAPED_BRACES_CLEAN, "escaped.md")
+    if issues:
+        print(f"FAIL: false positive on backslash-escaped braces: {issues}")
+        failures += 1
+    else:
+        print("PASS: no false positive on backslash-escaped braces (\\{escaped\\})")
+
+    issues = check_text(MIXED_ESCAPED_AND_BARE, "mixed.md")
+    if not any("bare '{...}'" in i.message for i in issues):
+        print(
+            "FAIL: did not catch bare '{bad}' alongside escaped \\{ok\\} in the same "
+            f"text: {issues}"
+        )
+        failures += 1
+    else:
+        print("PASS: still caught bare '{bad}' alongside escaped \\{ok\\}")
+
+    issues = check_text(ESCAPED_BACKSLASH_THEN_BARE_BRACE, "backslash-then-brace.md")
+    if not any("bare '{...}'" in i.message for i in issues):
+        print(
+            "FAIL: did not catch bare braces following an escaped backslash "
+            f"(\\\\{{bad\\\\}}): {issues}"
+        )
+        failures += 1
+    else:
+        print("PASS: still caught bare braces following an escaped backslash (\\\\{bad\\\\})")
 
     if failures:
         print(f"\n{failures} self-test failure(s).", file=sys.stderr)
