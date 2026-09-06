@@ -2137,3 +2137,20 @@ byte-identical duplicate pair) still passes with the per-call `env HOME=...` ful
 proof the container-level fix covers the case, not just code inspection. `flutter analyze`:
 clean. `flutter test`: full suite green against real Docker, 397 -> 400 tests (net +3). Closes
 #105.
+
+## Phase 34 — `09_setup_immich.sh` silent-failure and library-path fixes (2026-09-06)
+
+**Context:** A real first-time setup on a fresh machine never started Immich, with no error output.
+**Decisions:** Two defects fixed in `scripts/09_setup_immich.sh`. (1) The `DB_PASSWORD` generator
+piped an endless `/dev/urandom` read into `head -c 32`; `tr` is killed by SIGPIPE, and under
+`set -euo pipefail` that exit-141 terminated the whole script silently, before the compose file was
+written or `docker compose up` ran. The pipeline is now scoped with `set +o pipefail` in a subshell
+and the result length-checked, so an empty password can never reach `.env`. (2) The generated compose
+file hardcoded `/mnt/target_drive/immich_library` as the read-only `/library` mount while every other
+path derived from `$HD_PATH`, so any `DRIVE_NAME`/`HD_PATH` override silently bind-mounted the wrong
+directory — Docker creates a missing bind source as an empty root-owned dir, so Immich came up healthy
+with an empty external library and no error anywhere. Now driven by `EXTERNAL_LIBRARY_LOCATION`, with
+a backfill for `.env` files written by earlier versions. Also added a writability preflight, since a
+`sudo` run of `01_setup_dependencies.sh` leaves the drive root-owned.
+**Pivots:** None.
+**Outcome:** Step 09 fails loudly and correctly instead of silently, and honours a configured drive path.
