@@ -6,7 +6,7 @@ services:
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     volumes:
       - ${UPLOAD_LOCATION}:/data
-      - /mnt/target_drive/immich_library:/library:ro
+      - ${EXTERNAL_LIBRARY_LOCATION}:/library:ro
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
